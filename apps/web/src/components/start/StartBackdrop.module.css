@@ -1,0 +1,85 @@
+/* Cosmic backdrop: image + vignette + drifting star particles. */
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  background-color: var(--c-space);
+  background-image: url('/backgrounds/fantasy-party-1920.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: opacity var(--dur-slow) var(--ease-out);
+  will-change: opacity;
+}
+
+/* portrait phones get the tall crop */
+@media (orientation: portrait) and (max-width: 900px) {
+  .backdrop {
+    background-image: url('/backgrounds/fantasy-party-portrait-1080.jpg');
+  }
+}
+
+.backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(125% 92% at 50% 38%, transparent 34%, rgba(11, 6, 24, 0.42) 74%, rgba(11, 6, 24, 0.88) 100%),
+    linear-gradient(180deg, rgba(11, 6, 24, 0.5) 0%, transparent 24%, transparent 66%, rgba(11, 6, 24, 0.82) 100%);
+}
+
+.particles {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  bottom: -8dvh;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 8px 2px rgba(216, 180, 254, 0.65);
+  animation-name: floatUp;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.6);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate3d(0, -112dvh, 0) scale(1.1);
+    opacity: 0;
+  }
+}
+
+/* soft violet bloom behind the character stage */
+.haze {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  z-index: -1;
+  width: min(70vw, 720px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgba(139, 92, 246, 0.32) 0%,
+    rgba(217, 70, 239, 0.16) 38%,
+    transparent 68%
+  );
+  filter: blur(12px);
+}

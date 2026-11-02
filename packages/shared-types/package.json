@@ -1,0 +1,12 @@
+{
+  "name": "@imposter-game/shared-types",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Types shared by the web app, the mobile app and the socket server.",
+  "type": "module",
+  "types": "./src/contract.ts",
+  "exports": {
+    ".": "./src/contract.ts",
+    "./contract": "./src/contract.ts"
+  }
+}

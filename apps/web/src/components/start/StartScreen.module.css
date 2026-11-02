@@ -1,0 +1,89 @@
+.root {
+  overflow: hidden;
+  /* one screen, never a scrollbar */
+  height: 100dvh;
+  padding: clamp(12px, 3dvh, 32px) clamp(16px, 5vw, 40px);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1080px;
+  /* no fixed pixel budget — the grid flexes inside the locked viewport */
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: clamp(6px, 1.8dvh, 22px);
+  align-items: center;
+}
+
+.top {
+  display: flex;
+  justify-content: center;
+  padding-top: clamp(4px, 2dvh, 22px);
+}
+
+.middle {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  overflow: visible;
+}
+
+.bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
+  padding-bottom: clamp(4px, 2dvh, 22px);
+}
+
+/* fixed-height slot so swapping bar -> button causes no layout shift */
+.ctaSlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 76px;
+  width: 100%;
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-text-dim);
+  text-align: center;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+/* ---- short viewports: tighten the vertical rhythm ---- */
+@media (max-height: 640px) {
+  .content {
+    gap: var(--s-2);
+  }
+
+  /* fixed-height slot so swapping bar -> button causes no layout shift */
+.ctaSlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 76px;
+  width: 100%;
+}
+
+.hint {
+    display: none;
+  }
+}
+
+/* ---- wide screens: give the characters more room ---- */
+@media (min-width: 900px) and (min-height: 780px) {
+  .content {
+    max-width: 1180px;
+  }
+}

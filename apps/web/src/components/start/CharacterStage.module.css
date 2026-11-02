@@ -1,0 +1,58 @@
+/* Three characters, three DIFFERENT gestures, floating on the backdrop. */
+
+.stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0;
+  width: min(100%, 1040px);
+  margin: 0 auto;
+  pointer-events: none;
+}
+
+.figure {
+  position: relative;
+  margin: 0;
+  flex: 0 0 auto;
+  /* min() of vw and vh so short laptop screens shrink the cast instead of scrolling */
+  width: clamp(88px, min(28vw, 27vh), 288px);
+  /* slight overlap keeps the trio large on narrow phones without overflowing */
+  margin-inline: -5px;
+  transform-origin: 50% 92%;
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
+  will-change: transform, opacity;
+  animation: bob 5.6s var(--ease-in-out) infinite;
+}
+
+.center {
+  width: clamp(112px, min(36vw, 35vh), 368px);
+  z-index: 3;
+}
+
+/* very short windows (small laptops, split screens) */
+@media (max-height: 760px) {
+  .figure {
+    width: clamp(84px, min(26vw, 25vh), 210px);
+  }
+
+  .center {
+    width: clamp(104px, min(33vw, 32vh), 258px);
+  }
+}
+
+@keyframes bob {
+  0%, 100% { margin-bottom: 0; }
+  50% { margin-bottom: 12px; }
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 18px 26px rgba(8, 3, 20, 0.55));
+}
+

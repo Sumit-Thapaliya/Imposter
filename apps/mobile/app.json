@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Imposter Game",
+    "slug": "imposter-game",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "impostergame",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0B0618",
+    "splash": {
+      "image": "./assets/backgrounds/cosmic-nebula-portrait-720.jpg",
+      "resizeMode": "cover",
+      "backgroundColor": "#0B0618"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.impostergame.app"
+    },
+    "android": {
+      "package": "com.impostergame.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0618"
+      }
+    },
+    "plugins": ["expo-router"],
+    "experiments": { "typedRoutes": true }
+  }
+}

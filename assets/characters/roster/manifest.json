@@ -1,0 +1,410 @@
+{
+  "count": 27,
+  "characters": [
+    {
+      "id": "steampunk-brass",
+      "name": "Steampunk Brass",
+      "set": "set1-elite",
+      "file": "characters/set1-elite/steampunk-brass.png",
+      "source": "character.jpg",
+      "grid": {
+        "row": 1,
+        "col": 1
+      },
+      "size": [
+        602,
+        748
+      ]
+    },
+    {
+      "id": "swamp-vestige",
+      "name": "Swamp Vestige",
+      "set": "set1-elite",
+      "file": "characters/set1-elite/swamp-vestige.png",
+      "source": "character.jpg",
+      "grid": {
+        "row": 1,
+        "col": 2
+      },
+      "size": [
+        602,
+        748
+      ]
+    },
+    {
+      "id": "cursed-dual",
+      "name": "Cursed Dual",
+      "set": "set1-elite",
+      "file": "characters/set1-elite/cursed-dual.png",
+      "source": "character.jpg",
+      "grid": {
+        "row": 1,
+        "col": 3
+      },
+      "size": [
+        602,
+        748
+      ]
+    },
+    {
+      "id": "celestial-gold",
+      "name": "Celestial Gold",
+      "set": "set1-elite",
+      "file": "characters/set1-elite/celestial-gold.png",
+      "source": "character.jpg",
+      "grid": {
+        "row": 2,
+        "col": 1
+      },
+      "size": [
+        602,
+        758
+      ]
+    },
+    {
+      "id": "cyber-neon",
+      "name": "Cyber Neon",
+      "set": "set1-elite",
+      "file": "characters/set1-elite/cyber-neon.png",
+      "source": "character.jpg",
+      "grid": {
+        "row": 2,
+        "col": 2
+      },
+      "size": [
+        602,
+        758
+      ]
+    },
+    {
+      "id": "plague-goggles",
+      "name": "Plague Goggles",
+      "set": "set1-elite",
+      "file": "characters/set1-elite/plague-goggles.png",
+      "source": "character.jpg",
+      "grid": {
+        "row": 2,
+        "col": 3
+      },
+      "size": [
+        602,
+        758
+      ]
+    },
+    {
+      "id": "sea-serpent",
+      "name": "Sea Serpent",
+      "set": "set1-elite",
+      "file": "characters/set1-elite/sea-serpent.png",
+      "source": "character.jpg",
+      "grid": {
+        "row": 3,
+        "col": 1
+      },
+      "size": [
+        602,
+        736
+      ]
+    },
+    {
+      "id": "desert-wander",
+      "name": "Desert Wander",
+      "set": "set1-elite",
+      "file": "characters/set1-elite/desert-wander.png",
+      "source": "character.jpg",
+      "grid": {
+        "row": 3,
+        "col": 2
+      },
+      "size": [
+        602,
+        736
+      ]
+    },
+    {
+      "id": "galaxy-cosmic",
+      "name": "Galaxy Cosmic",
+      "set": "set1-elite",
+      "file": "characters/set1-elite/galaxy-cosmic.png",
+      "source": "character.jpg",
+      "grid": {
+        "row": 3,
+        "col": 3
+      },
+      "size": [
+        602,
+        736
+      ]
+    },
+    {
+      "id": "frost-blue",
+      "name": "Frost Blue",
+      "set": "set2-themed",
+      "file": "characters/set2-themed/frost-blue.png",
+      "source": "character1.jpg",
+      "grid": {
+        "row": 1,
+        "col": 1
+      },
+      "size": [
+        602,
+        748
+      ]
+    },
+    {
+      "id": "shadow-amber",
+      "name": "Shadow Amber",
+      "set": "set2-themed",
+      "file": "characters/set2-themed/shadow-amber.png",
+      "source": "character1.jpg",
+      "grid": {
+        "row": 1,
+        "col": 2
+      },
+      "size": [
+        602,
+        748
+      ]
+    },
+    {
+      "id": "venom-green",
+      "name": "Venom Green",
+      "set": "set2-themed",
+      "file": "characters/set2-themed/venom-green.png",
+      "source": "character1.jpg",
+      "grid": {
+        "row": 1,
+        "col": 3
+      },
+      "size": [
+        602,
+        748
+      ]
+    },
+    {
+      "id": "mummy-gold",
+      "name": "Mummy Gold",
+      "set": "set2-themed",
+      "file": "characters/set2-themed/mummy-gold.png",
+      "source": "character1.jpg",
+      "grid": {
+        "row": 2,
+        "col": 1
+      },
+      "size": [
+        602,
+        758
+      ]
+    },
+    {
+      "id": "lavender-mist",
+      "name": "Lavender Mist",
+      "set": "set2-themed",
+      "file": "characters/set2-themed/lavender-mist.png",
+      "source": "character1.jpg",
+      "grid": {
+        "row": 2,
+        "col": 2
+      },
+      "size": [
+        602,
+        758
+      ]
+    },
+    {
+      "id": "ember-red",
+      "name": "Ember Red",
+      "set": "set2-themed",
+      "file": "characters/set2-themed/ember-red.png",
+      "source": "character1.jpg",
+      "grid": {
+        "row": 2,
+        "col": 3
+      },
+      "size": [
+        602,
+        758
+      ]
+    },
+    {
+      "id": "orchid-pink",
+      "name": "Orchid Pink",
+      "set": "set2-themed",
+      "file": "characters/set2-themed/orchid-pink.png",
+      "source": "character1.jpg",
+      "grid": {
+        "row": 3,
+        "col": 1
+      },
+      "size": [
+        602,
+        736
+      ]
+    },
+    {
+      "id": "sand-dune",
+      "name": "Sand Dune",
+      "set": "set2-themed",
+      "file": "characters/set2-themed/sand-dune.png",
+      "source": "character1.jpg",
+      "grid": {
+        "row": 3,
+        "col": 2
+      },
+      "size": [
+        602,
+        736
+      ]
+    },
+    {
+      "id": "glacier-white",
+      "name": "Glacier White",
+      "set": "set2-themed",
+      "file": "characters/set2-themed/glacier-white.png",
+      "source": "character1.jpg",
+      "grid": {
+        "row": 3,
+        "col": 3
+      },
+      "size": [
+        602,
+        736
+      ]
+    },
+    {
+      "id": "crew-red",
+      "name": "Crew Red",
+      "set": "set3-classic",
+      "file": "characters/set3-classic/crew-red.png",
+      "source": "character2.jpg",
+      "grid": {
+        "row": 1,
+        "col": 1
+      },
+      "size": [
+        602,
+        748
+      ]
+    },
+    {
+      "id": "crew-blue",
+      "name": "Crew Blue",
+      "set": "set3-classic",
+      "file": "characters/set3-classic/crew-blue.png",
+      "source": "character2.jpg",
+      "grid": {
+        "row": 1,
+        "col": 2
+      },
+      "size": [
+        602,
+        748
+      ]
+    },
+    {
+      "id": "crew-green",
+      "name": "Crew Green",
+      "set": "set3-classic",
+      "file": "characters/set3-classic/crew-green.png",
+      "source": "character2.jpg",
+      "grid": {
+        "row": 1,
+        "col": 3
+      },
+      "size": [
+        602,
+        748
+      ]
+    },
+    {
+      "id": "crew-yellow",
+      "name": "Crew Yellow",
+      "set": "set3-classic",
+      "file": "characters/set3-classic/crew-yellow.png",
+      "source": "character2.jpg",
+      "grid": {
+        "row": 2,
+        "col": 1
+      },
+      "size": [
+        602,
+        758
+      ]
+    },
+    {
+      "id": "crew-purple",
+      "name": "Crew Purple",
+      "set": "set3-classic",
+      "file": "characters/set3-classic/crew-purple.png",
+      "source": "character2.jpg",
+      "grid": {
+        "row": 2,
+        "col": 2
+      },
+      "size": [
+        602,
+        758
+      ]
+    },
+    {
+      "id": "crew-orange",
+      "name": "Crew Orange",
+      "set": "set3-classic",
+      "file": "characters/set3-classic/crew-orange.png",
+      "source": "character2.jpg",
+      "grid": {
+        "row": 2,
+        "col": 3
+      },
+      "size": [
+        602,
+        758
+      ]
+    },
+    {
+      "id": "crew-crimson",
+      "name": "Crew Crimson",
+      "set": "set3-classic",
+      "file": "characters/set3-classic/crew-crimson.png",
+      "source": "character2.jpg",
+      "grid": {
+        "row": 3,
+        "col": 1
+      },
+      "size": [
+        602,
+        736
+      ]
+    },
+    {
+      "id": "crew-tan",
+      "name": "Crew Tan",
+      "set": "set3-classic",
+      "file": "characters/set3-classic/crew-tan.png",
+      "source": "character2.jpg",
+      "grid": {
+        "row": 3,
+        "col": 2
+      },
+      "size": [
+        602,
+        736
+      ]
+    },
+    {
+      "id": "crew-teal",
+      "name": "Crew Teal",
+      "set": "set3-classic",
+      "file": "characters/set3-classic/crew-teal.png",
+      "source": "character2.jpg",
+      "grid": {
+        "row": 3,
+        "col": 3
+      },
+      "size": [
+        602,
+        736
+      ]
+    }
+  ]
+}

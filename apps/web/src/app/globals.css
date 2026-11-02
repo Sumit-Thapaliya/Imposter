@@ -1,0 +1,186 @@
+/* ==========================================================================
+   Global styles — reset + shared primitives used by the start/loading screens.
+   ========================================================================== */
+
+@import '../styles/tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--c-void);
+  color: var(--c-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ---- full-bleed stage ---- */
+.stage {
+  position: relative;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* ---- background layers ---- */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-color: var(--c-space);
+  background-image: var(--bg-desktop);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+@media (orientation: portrait) and (max-width: 900px) {
+  .backdrop {
+    background-image: var(--bg-portrait);
+  }
+}
+
+.backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--grad-vignette);
+  pointer-events: none;
+}
+
+/* ---- ambient particles ---- */
+.particles {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  box-shadow: 0 0 8px 2px rgba(216, 180, 254, 0.6);
+  animation: float-up linear infinite;
+}
+
+@keyframes float-up {
+  0% {
+    transform: translate3d(0, 12dvh, 0) scale(0.6);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate3d(0, -104dvh, 0) scale(1.1);
+    opacity: 0;
+  }
+}
+
+/* ---- reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---- shared button ---- */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  border: 0;
+  border-radius: var(--r-pill);
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #2b1b00;
+  background: var(--grad-gold);
+  box-shadow:
+    0 6px 0 var(--c-gold-dark),
+    var(--glow-gold);
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    filter var(--dur-fast) var(--ease-out);
+}
+
+.btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 0 var(--c-gold-dark),
+    var(--glow-gold);
+}
+
+.btn:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 3px 0 var(--c-gold-dark),
+    0 0 20px rgba(251, 191, 36, 0.35);
+}
+
+.btn:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.btn--ghost {
+  color: var(--c-text);
+  background: rgba(45, 26, 82, 0.75);
+  box-shadow:
+    0 6px 0 #170d30,
+    inset 0 0 0 2px var(--c-line);
+}
+
+.btn--ghost:hover {
+  box-shadow:
+    0 8px 0 #170d30,
+    inset 0 0 0 2px var(--c-violet);
+}
+
+/* ---- eyebrow label ---- */
+.eyebrow {
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-text-muted);
+  font-weight: 700;
+}

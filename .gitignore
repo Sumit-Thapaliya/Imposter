@@ -1,0 +1,53 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+build/
+out/
+.next/
+.expo/
+web-build/
+*.tsbuildinfo
+
+# env — commit the template only
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# tests / caches
+coverage/
+.turbo/
+.cache/
+.eslintcache
+.vercel/
+
+# native
+android/
+ios/
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+!debug.keystore
+
+# editor / OS
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+*.swp
+
+# local screenshots
+screenshots/local/

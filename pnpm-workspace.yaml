@@ -1,0 +1,7 @@
+# pnpm workspace definition.
+packages:
+  # Applications: two separate frontends + the one shared backend.
+  - "apps/*"
+  # Shared packages: types, validation, game engine, UI, utils.
+  - "packages/*"
+  # Deliberately NOT workspaces: docs/, scripts/, tests/

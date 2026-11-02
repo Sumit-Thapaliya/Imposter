@@ -1,0 +1,39 @@
+.wrap {
+  position: relative;
+  z-index: 4;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
+}
+
+.button {
+  width: 100%;
+  padding: clamp(13px, 3.4vw, 18px) var(--s-5);
+  font-size: clamp(1rem, 3.6vw, 1.3rem);
+  text-transform: none;
+}
+
+.label {
+  flex: 1 1 auto;
+  text-align: center;
+}
+
+.arrow {
+  width: 1.15em;
+  height: 1.15em;
+  flex: 0 0 auto;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.button:hover .arrow {
+  transform: translateX(4px);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
