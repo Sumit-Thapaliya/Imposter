@@ -1,6 +1,7 @@
+import type { JSX } from 'react';
 'use client';
 
-import type { GameMode } from '@/data/modes';
+import type { GameMode } from '@shared/game';
 import { WordArt, DrawingArt } from '@/components/ui/ModeIcon';
 import {
   CARD_BASE,
@@ -24,7 +25,7 @@ type Props = {
  * One component, reused by BOTH the local and online branches.
  * Pure Tailwind, mirrors PlayTypeCard so the two screens feel like one flow.
  */
-export function GameModeCard({ mode, onSelect }: Props) {
+export function GameModeCard({ mode, onSelect }: Props) : JSX.Element {
   const isWord = mode.id === 'word';
 
   return (

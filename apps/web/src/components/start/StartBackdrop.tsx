@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type JSX } from 'react';
 import styles from './StartBackdrop.module.css';
 
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
  * Layered cosmic backdrop: image + vignette + drifting particles.
  * Purely decorative, aria-hidden.
  */
-export function StartBackdrop({ reveal = 1 }: Props) {
+export function StartBackdrop({ reveal = 1 }: Props) : JSX.Element {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);

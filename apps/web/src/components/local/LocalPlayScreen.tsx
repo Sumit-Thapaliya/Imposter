@@ -9,11 +9,9 @@ import { DrawingPad } from './DrawingPad';
 import {
   DOMAINS,
   FALLBACK_DOMAIN,
-  resolveDomain,
   type DomainChoice,
-  type DomainId,
 } from '@/data/localConfig';
-import { wordFor, hintFor, domainLabel } from '@/data/wordBank';
+import { selectWord, domainLabel } from '@shared/game/wordBank';
 
 /**
  * Local pass-and-play handout.
@@ -59,7 +57,9 @@ function Inner() {
    * every re-render and change the answer under the players' feet.
    */
   const domainChoice = (params.get('domain') ?? 'food') as DomainChoice;
-  const [domainId] = useState<DomainId>(() => resolveDomain(domainChoice));
+  // One word and its matching hint stay fixed until a new game is started.
+  const [prompt, setPrompt] = useState(() => selectWord(domainChoice));
+  const domainId = prompt.domain;
   const domain = DOMAINS.find((item) => item.id === domainId) ?? FALLBACK_DOMAIN;
   const domainName = domainLabel(domainId);
 
@@ -77,19 +77,55 @@ function Inner() {
   const discussionTimer = Number(params.get('discussionTimer') ?? 0);
   const drawsPerTurn = Math.min(3, Math.max(1, Number(params.get('drawsPerTurn') ?? 1)));
 
-  /** Seat order. Random-first rotates the list, so it stays stable per mount. */
+  /**
+   * Bumped by "Play again" so the seats and the imposter are re-drawn every game.
+   * A fixed seed per mount would hand out the same roles on a replay, which is exactly
+   * the problem this replaced.
+   */
+  const [deal, setDeal] = useState(0);
+
+  /** Fisher–Yates. `deal` reseeds it, so a replay is a fresh shuffle. */
   const order = useMemo(() => {
     const seats = Array.from({ length: players }, (_, i) => i + 1);
     if (!randomFirst) return seats;
-    const shift = (domainName.length * 7 + players) % players;
-    return [...seats.slice(shift), ...seats.slice(0, shift)];
-  }, [players, randomFirst, domainName]);
+    const shuffled = [...seats];
+    for (let i = shuffled.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const a = shuffled[i]!;
+      const b = shuffled[j]!;
+      shuffled[i] = b;
+      shuffled[j] = a;
+    }
+    return shuffled;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [players, randomFirst, deal]);
 
-  /** Imposters are the last seats in the order. */
-  const imposterSeats = useMemo(
-    () => new Set(order.slice(players - imposters)),
-    [order, players, imposters],
-  );
+  /**
+   * Imposters are drawn at random from the seats — never the last ones.
+   *
+   * The old version took `order.slice(players - imposters)`, so seat "Player 6" was the
+   * imposter in every single game. Now the seats are shuffled and the first N win.
+   */
+  const imposterSeats = useMemo(() => {
+    const pool = [...order];
+    for (let i = pool.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const a = pool[i]!;
+      const b = pool[j]!;
+      pool[i] = b;
+      pool[j] = a;
+    }
+    return new Set(pool.slice(0, imposters));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order, imposters, deal]);
+
+  /**
+   * Roles seen so far, by seat. Drawing used to skip the card entirely, so nobody ever
+   * learned the word or that they were the imposter — the board was fully cooperative and
+   * the reveal at the end was the first time it mattered. Recording the role lets the draw
+   * screen show "Player 3 · Crew or imposter" without re-dealing mid-round.
+   */
+  const [revealed, setRevealed] = useState<Record<number, boolean>>({});
 
   const [step, setStep] = useState<Step>('handout');
   const [turn, setTurn] = useState(0);
@@ -98,10 +134,24 @@ function Inner() {
   /** true while the device is being passed during a shared drawing turn */
   const [handedOver, setHandedOver] = useState(false);
 
-  const seat = order[turn] ?? 1;
+  /**
+   * Turn index runs across every lap, so it can exceed the length of `order`.
+   * Wrapping here is what keeps lap 2 pointing at a real seat instead of `undefined`.
+   */
+  const seatAt = (index: number) => order[index % players] ?? 1;
+  const seat = seatAt(turn);
   const isImposter = imposterSeats.has(seat);
-  const secretWord = wordFor(domainId);
-  const lastTurn = turn >= players - 1;
+  const secretWord = prompt.word;
+  /**
+   * Drawing runs for as many laps as the Rounds setting — the default 3 means everyone
+   * adds to the same picture three times. Word mode still uses one lap of the table,
+   * which is what it always did.
+   */
+  const drawLaps = isWord ? 1 : Math.max(1, Number(rounds) || 1);
+  const lap = Math.floor(turn / players) + 1;
+  const lastTurn = turn >= drawLaps * players - 1;
+  /** the card phase is always one lap of the table, however many laps drawing runs */
+  const lastCard = turn >= players - 1;
 
   const accent = isWord ? 'violet' : 'orange';
   const accentText = isWord ? 'text-[#C4B5FD]' : 'text-[#FDBA74]';
@@ -121,10 +171,35 @@ function Inner() {
 
   function revealCard() {
     setFlip((n) => n + 1);
+    setRevealed((seen) => ({ ...seen, [seat]: isImposter }));
     setStep('reveal');
   }
 
+  /**
+   * Leaving the card phase.
+   *
+   * Word mode rolls into the clue round as it always did. Drawing mode hands the device
+   * round the table once for the cards, then opens the shared board — a completely
+   * different next step, so it gets its own function instead of overloading `advance()`.
+   */
+  function handOver() {
+    if (isWord) {
+      advance();
+      return;
+    }
+    if (lastCard) {
+      setStep('draw');
+      setTurn(0);
+      setHandedOver(false);
+      return;
+    }
+    setTurn((n) => n + 1);
+    setStep('handout');
+  }
+
   function restart() {
+    setPrompt(previous => selectWord(domainChoice, Math.random, previous.word));
+    setDeal((n) => n + 1);
     setStep('handout');
     setTurn(0);
     setHandedOver(false);
@@ -188,8 +263,8 @@ function Inner() {
   );
 
   return (
-    <ScreenShell backdrop="gamemode">
-      <div className="relative z-[1] flex h-full w-full max-w-[430px] flex-col items-center justify-center gap-[clamp(8px,1.7dvh,14px)]">
+    <ScreenShell backdrop="gamemode" scrollable={!isWord && step === 'draw'}>
+      <div className={`relative z-[1] flex w-full flex-col items-center gap-[clamp(8px,1.7dvh,14px)] ${!isWord && step === 'draw' ? 'h-auto max-w-[960px] justify-start' : 'h-full max-w-[430px] justify-center'}`}>
         {header}
 
         {/* ---------------- HANDOUT ---------------- */}
@@ -217,13 +292,13 @@ function Inner() {
                   Player {seat}
                 </span>
                 <span className="mt-0.5 text-[0.72rem] font-semibold text-white/65">
-                  {isWord ? 'Everyone else, look away' : 'The crew draws one picture together'}
+                  {isWord ? 'Everyone else, look away' : 'Crew see the word — the imposter bluffs'}
                 </span>
               </div>
 
               <button
                 type="button"
-                onClick={isWord ? revealCard : () => setStep('draw')}
+                onClick={revealCard}
                 className={[
                   BTN_RESET,
                   'mt-5 grid w-full place-items-center rounded-[15px] px-3 py-3.5',
@@ -233,7 +308,7 @@ function Inner() {
                   ['animate-glow hover:-translate-y-[1px] active:translate-y-[1px]', NO_MOTION, ART[accent]].join(' '),
                 ].join(' ')}
               >
-                {isWord ? 'Tap to see your card' : 'Open the drawing pad'}
+                Tap to see your card
               </button>
 
               <div className="mt-2.5 flex items-center justify-center gap-2 text-[0.62rem] font-bold uppercase tracking-[0.08em] text-white/50">
@@ -301,7 +376,7 @@ function Inner() {
                             Your hint
                           </span>
                           <span className="max-w-[280px] text-[0.9rem] font-extrabold leading-snug text-white">
-                            {hintFor(domainId)}
+                            {prompt.hint}
                           </span>
                           <span className="mt-0.5 text-[0.66rem] font-semibold text-white/55">
                             You do not know the word. Bluff.
@@ -338,7 +413,7 @@ function Inner() {
 
             <button
               type="button"
-              onClick={advance}
+              onClick={handOver}
               className={[
                 BTN_RESET,
                 'grid w-full place-items-center rounded-[15px] px-3 py-3.5',
@@ -348,7 +423,13 @@ function Inner() {
                 ART[accent],
               ].join(' ')}
             >
-              {lastTurn ? 'Pass · everyone is done' : `Pass to Player ${order[turn + 1]}`}
+              {isWord
+                ? lastTurn
+                  ? 'Pass · everyone is done'
+                  : `Pass to Player ${seatAt(turn + 1)}`
+                : lastCard
+                  ? 'Everyone has their card · start drawing'
+                  : `Pass to Player ${seatAt(turn + 1)}`}
             </button>
             <p className="m-0 text-[0.62rem] font-bold uppercase tracking-[0.12em] text-white/50">
               Hide the screen before passing
@@ -359,16 +440,28 @@ function Inner() {
         {/* ---------------- DRAW: one shared panel, turn by turn ---------------- */}
         {!isWord && step === 'draw' && (
           <>
-            <div className="w-full rounded-[22px] bg-[#120A26]/95 p-3 ring-1 ring-inset ring-white/14 shadow-[0_22px_46px_rgba(0,0,0,0.58)] animate-rise-in motion-reduce:animate-none">
+            <div className="w-full rounded-[22px] bg-[#120A26]/95 p-1 sm:p-3 ring-1 ring-inset ring-white/14 shadow-[0_22px_46px_rgba(0,0,0,0.58)] animate-rise-in motion-reduce:animate-none">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <span className="shrink-0 whitespace-nowrap text-[0.74rem] font-extrabold uppercase tracking-[0.1em] text-white">
-                  Turn {turn + 1} of {players}
+                  Player {seat} · Round {lap} of {drawLaps}
                 </span>
                 {badge}
               </div>
 
-              <p className="m-0 mb-1.5 text-[0.68rem] font-extrabold uppercase tracking-[0.12em] text-[#C4B5FD]">
-                {drawsPerTurn} stroke{drawsPerTurn > 1 ? 's' : ''} each · keep the drawing going
+              <p className="m-0 mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.66rem] font-extrabold uppercase tracking-[0.1em]">
+                <span className="text-[#C4B5FD]">
+                  {drawsPerTurn} stroke{drawsPerTurn > 1 ? 's' : ''} each
+                </span>
+                {revealed[seat] ? (
+                  <span className="rounded-full bg-[#F472B6]/20 px-2 py-0.5 text-[#FBCFE8] ring-1 ring-inset ring-[#F472B6]/40">
+                    Imposter
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-[#22C55E]/15 px-2 py-0.5 text-[#4ADE80] ring-1 ring-inset ring-[#22C55E]/40">
+                    Crew
+                  </span>
+                )}
+                <span className="text-white/45">keep the drawing going</span>
               </p>
 
               {/*
@@ -380,7 +473,7 @@ function Inner() {
                 <DrawingPad
                   accent={accent}
                   keepContent
-                  turnLabel={`Player ${order[turn]}`}
+                  turnLabel={`Player ${seat}`}
                 />
               </div>
 
@@ -388,7 +481,7 @@ function Inner() {
                 <div className="grid h-[clamp(150px,26dvh,230px)] place-items-center rounded-[13px] bg-[#171029] ring-1 ring-inset ring-white/12">
                   <p className="m-0 max-w-[240px] px-3 text-center text-[0.72rem] font-semibold leading-snug text-white/60">
                     Hand the device to{' '}
-                    <span className="font-extrabold text-[#C4B5FD]">{order[turn]}</span> —
+                    <span className="font-extrabold text-[#C4B5FD]">{seat}</span> —
                     the picture is hidden until they take over.
                   </p>
                 </div>
@@ -408,7 +501,7 @@ function Inner() {
                   ART[accent],
                 ].join(' ')}
               >
-                {order[turn]} — tap to continue drawing
+                {seat} — tap to continue drawing
               </button>
             ) : (
               <button
@@ -432,7 +525,9 @@ function Inner() {
                   ART[accent],
                 ].join(' ')}
               >
-                {lastTurn ? 'Finish · drawing is done' : `Done · pass to ${order[turn + 1]}`}
+                {lastTurn
+                  ? 'Finish · drawing is done'
+                  : `Done · pass to ${seatAt(turn + 1)}`}
               </button>
             )}
 

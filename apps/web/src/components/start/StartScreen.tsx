@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type JSX } from 'react';
 import { useRouter } from 'next/navigation';
 import { StartBackdrop } from './StartBackdrop';
 import { LogoLockup } from './LogoLockup';
@@ -13,7 +13,7 @@ import styles from './StartScreen.module.css';
  * Start screen — composes backdrop, logo, character stage and CTA.
  * Props are intentionally minimal: navigation is wired later, not here.
  */
-export function StartScreen({ onPlay }: { onPlay?: () => void }) {
+export function StartScreen({ onPlay }: { onPlay?: () => void }): JSX.Element {
   const router = useRouter();
   const [reveal, setReveal] = useState(0);
   const [loaded, setLoaded] = useState(false);

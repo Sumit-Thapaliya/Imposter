@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 'use client';
 
 import type { ReactNode } from 'react';
@@ -19,7 +20,7 @@ export function Panel({
   hint?: string;
   children: ReactNode;
   className?: string;
-}) {
+}): JSX.Element {
   return (
     <section
       className={[
@@ -57,7 +58,7 @@ export function Stepper({
   max: number;
   onChange: (next: number) => void;
   accent: 'violet' | 'orange';
-}) {
+}): JSX.Element {
   const on = accent === 'violet';
   const activeTone = on
     ? 'bg-[linear-gradient(170deg,#A78BFA_0%,#7C3AED_100%)] shadow-[0_3px_0_#4C1D95]'
@@ -117,7 +118,7 @@ export function SegmentedControl<T extends string | number>({
   onChange: (next: T) => void;
   label: string;
   accent: 'violet' | 'orange';
-}) {
+}): JSX.Element {
   const on =
     accent === 'violet'
       ? 'bg-[linear-gradient(170deg,#A78BFA_0%,#7C3AED_100%)] text-white shadow-[0_3px_0_#4C1D95]'
@@ -166,7 +167,7 @@ export function ToggleRow({
   checked: boolean;
   onChange: (next: boolean) => void;
   accent: 'violet' | 'orange';
-}) {
+}): JSX.Element {
   const on =
     accent === 'violet'
       ? 'bg-[linear-gradient(170deg,#A78BFA_0%,#7C3AED_100%)] shadow-[0_2px_0_#4C1D95]'
@@ -225,7 +226,7 @@ export function ChipGroup<T extends string>({
   onChange: (next: T) => void;
   label: string;
   accent: 'violet' | 'orange';
-}) {
+}): JSX.Element {
   const on =
     accent === 'violet'
       ? 'bg-[linear-gradient(170deg,#A78BFA_0%,#7C3AED_100%)] text-white shadow-[0_2px_0_#4C1D95]'
@@ -271,7 +272,7 @@ export function MiniToggle({
   checked: boolean;
   onChange: (next: boolean) => void;
   accent: 'violet' | 'orange';
-}) {
+}): JSX.Element {
   const on =
     accent === 'violet'
       ? 'bg-[linear-gradient(170deg,#A78BFA_0%,#7C3AED_100%)] shadow-[0_2px_0_#4C1D95]'

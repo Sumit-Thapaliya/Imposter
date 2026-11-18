@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 'use client';
 
 import { STAGE_CHARACTERS } from '@/data/characters';
@@ -13,7 +14,7 @@ type Props = {
  * the stage is meant to read as a cast, not a menu.
  * Layout comes from the manifest order; nothing is hardcoded per slot.
  */
-export function CharacterStage({ reveal = 1 }: Props) {
+export function CharacterStage({ reveal = 1 }: Props) : JSX.Element {
   const count = STAGE_CHARACTERS.length;
 
   return (

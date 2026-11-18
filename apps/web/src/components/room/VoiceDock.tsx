@@ -12,7 +12,7 @@
  * has no LiveKit credentials — that case says so and shows nothing else.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type JSX } from 'react';
 import {
   ConnectionState,
   Room as LivekitRoom,
@@ -30,7 +30,7 @@ const FOCUS =
 
 type Status = 'idle' | 'connecting' | 'live' | 'blocked' | 'unavailable' | 'error';
 
-export function VoiceDock({ state }: { state: RoomState }) {
+export function VoiceDock({ state }: { state: RoomState }): JSX.Element {
   const roomRef = useRef<LivekitRoom | null>(null);
   const [status, setStatus] = useState<Status>('idle');
   const [muted, setMuted] = useState(true);

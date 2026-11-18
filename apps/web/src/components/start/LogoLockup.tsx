@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 'use client';
 
 import styles from './LogoLockup.module.css';
@@ -12,7 +13,7 @@ type Props = {
  * "IMPOSTER" wordmark + tagline.
  * Text-based lockup: swap in an SVG logo later without touching layout.
  */
-export function LogoLockup({ reveal = 1, tagline = 'Guess · Draw · Find the Imposter!' }: Props) {
+export function LogoLockup({ reveal = 1, tagline = 'Guess · Draw · Find the Imposter!' }: Props) : JSX.Element {
   return (
     <header
       className={styles.wrap}

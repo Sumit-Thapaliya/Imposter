@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 'use client';
 
 import styles from './PlayButton.module.css';
@@ -13,7 +14,7 @@ type Props = {
  * Primary gold CTA. Full width on phones, fixed max-width on desktop.
  * The arrow nudges on hover — the only motion, so it stays calm.
  */
-export function PlayButton({ onClick, label = 'Get Started', disabled = false, reveal = 1 }: Props) {
+export function PlayButton({ onClick, label = 'Get Started', disabled = false, reveal = 1 }: Props) : JSX.Element {
   return (
     <div
       className={styles.wrap}

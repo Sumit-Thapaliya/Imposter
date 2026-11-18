@@ -7,6 +7,7 @@
  */
 
 import { randomInt } from 'node:crypto';
+import { selectWord } from '../../../../packages/shared-types/src/wordBank';
 import type {
   Phase,
   RoomSettings,
@@ -16,30 +17,6 @@ import type {
   Stroke,
   Vote,
 } from '../../../../packages/shared-types/src/contract';
-
-/* ----------------------------------------------------------------- word source */
-
-export type Word = { word: string; hint: string };
-
-/**
- * Placeholder word bank, one word per domain, matching the web app's
- * `data/wordBank.ts` so local and online play pick the same word. Swapping this for
- * a real bank is a single-file change on the server.
- */
-export const WORDS: Record<string, Word> = {
-  food: { word: 'Sushi', hint: 'Something you eat — dishes and snacks' },
-  animals: { word: 'Panda', hint: 'A living creature — wild or tame' },
-  places: { word: 'Paris', hint: 'Somewhere you can travel to' },
-  movies: { word: 'Titanic', hint: 'A film people have watched' },
-  objects: { word: 'Umbrella', hint: 'A thing you can hold or use' },
-  sports: { word: 'Cricket', hint: 'A game people play to win' },
-};
-
-export function wordFor(domain: string): Word {
-  return WORDS[domain] ?? WORDS.food!;
-}
-
-/* ---------------------------------------------------------------------- record */
 
 export type PlayerRecord = {
   id: string;
@@ -83,6 +60,13 @@ export type RoomRecord = {
   word: string | null;
   hintText: string | null;
 };
+
+/* ----------------------------------------------------------------- word source */
+
+/** The server chooses the word once and sends only the hint to imposters. */
+export function dealWord(domain: string, previousWord?: string | null): { word: string; hint: string } {
+  return selectWord(domain, () => randomInt(0x100000000) / 0x100000000, previousWord);
+}
 
 export const MIN_PLAYERS = 3;
 export const MAX_CHAT = 120;
@@ -129,7 +113,7 @@ export function systemLine(room: RoomRecord, text: string): void {
  * list of words that contains it.
  */
 export function dealRound(room: RoomRecord): void {
-  const { word, hint } = wordFor(room.settings.domain);
+  const { word, hint } = dealWord(room.settings.domain, room.word);
   room.word = word;
   room.hintText = hint;
   room.votes = new Map();
@@ -145,7 +129,7 @@ export function dealRound(room: RoomRecord): void {
     const isImposter = imposterIds.has(player.id);
     player.role = isImposter ? 'imposter' : 'crew';
     player.word = isImposter ? null : word;
-    player.hint = isImposter ? hint : null;
+    player.hint = isImposter && room.settings.hints ? hint : null;
   }
 
   room.clueOrder = shuffle(seated).map((p) => p.id);
@@ -162,7 +146,8 @@ export function dealRound(room: RoomRecord): void {
 export function skipRoles(room: RoomRecord): void {
   room.votes = new Map();
   room.result = null;
-  room.clueOrder = room.players.filter((p) => !p.spectator).map((p) => p.id);
+  // Random first drawer, not seat order — nobody should always go first.
+  room.clueOrder = shuffle(room.players.filter((p) => !p.spectator)).map((p) => p.id);
   room.clueIndex = 0;
   room.phase = 'clues';
   room.deadline = null;
@@ -238,7 +223,7 @@ export function resolveVotes(room: RoomRecord): RoundResult {
     imposters: room.players
       .filter((p) => p.role === 'imposter')
       .map((p) => ({ id: p.id, name: p.name, avatar: p.avatar })),
-    word: room.word ?? wordFor(room.settings.domain).word,
+    word: room.word ?? '',
     votes: tally(room, room.settings.voting === 'secret'),
   };
 

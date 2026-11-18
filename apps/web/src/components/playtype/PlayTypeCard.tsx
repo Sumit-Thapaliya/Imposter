@@ -1,6 +1,7 @@
+import type { JSX } from 'react';
 'use client';
 
-import type { PlayType } from '@/data/modes';
+import type { PlayType } from '@shared/game';
 import {
   CARD_BASE,
   CARD_TONE,
@@ -78,7 +79,7 @@ function GlobeArt() {
  * art on top, title, subtitle, muted tag bottom-left, round arrow bottom-right,
  * chunky 3D bottom edge. Pure Tailwind, no CSS module.
  */
-export function PlayTypeCard({ type, onSelect }: Props) {
+export function PlayTypeCard({ type, onSelect }: Props) : JSX.Element {
   const isLocal = type.id === 'local';
 
   return (

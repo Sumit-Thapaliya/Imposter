@@ -8,9 +8,15 @@
  * here decides anything.
  *
  * reveal → clues → discussion → voting → result
+ *
+ * Layout, top to bottom, in a playing round:
+ *   status bar  → round / mode / channel / timer
+ *   your card   → the word, or "IMPOSTER" in red, plus whose turn it is
+ *   board       → drawing rooms only
+ *   chat        → the feed
  */
-import type { JSX } from 'react';
-import { useEffect, useRef, useState } from 'react';
+
+import { useEffect, useRef, useState, type JSX } from 'react';
 import { BTN_RESET } from '@/components/local/controls';
 import { CHANNEL_MODES } from '@/lib/rooms/settings';
 import { send } from '@/lib/rooms/socket';
@@ -100,6 +106,10 @@ export function RoomGame({ state, onExit }: RoomGameProps): JSX.Element {
 
   const channelLabel = CHANNEL_MODES.find((c) => c.id === channels)?.label ?? 'Chat';
   const isDrawing = state.mode === 'drawing';
+  const amImposter = state.you.role === 'imposter';
+  const amCrew = state.you.role === 'crew';
+  /** the card is worth showing from the deal until the vote closes */
+  const showCard = state.phase !== 'lobby' && state.phase !== 'result' && state.phase !== 'voting';
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -139,18 +149,26 @@ export function RoomGame({ state, onExit }: RoomGameProps): JSX.Element {
         )}
       </div>
 
-      {/* ---------- your card ---------- */}
-      {state.phase === 'reveal' && (
-        <div className="rounded-[16px] bg-[#160d33]/85 p-3.5 ring-1 ring-inset ring-[#8a69c4]/35">
+      {/* ---------- your card + whose turn ---------- */}
+      {showCard && (
+        <div
+          className={[
+            'rounded-[16px] p-3 ring-1 ring-inset',
+            amImposter
+              ? 'bg-[#2A0A16]/90 ring-[#F43F5E]/45'
+              : 'bg-[#160d33]/85 ring-[#8a69c4]/35',
+          ].join(' ')}
+        >
           <p className="m-0 text-center text-[0.7rem] font-extrabold uppercase tracking-[0.14em] text-[#C4B5FD]">
             Your card
           </p>
-          {state.you.role === 'imposter' ? (
+
+          {amImposter ? (
             <>
-              <p className="m-0 mt-1 text-center font-display text-[1.35rem] font-extrabold text-[#F9A8D4]">
-                You are the imposter
+              <p className="m-0 mt-1 text-center font-display text-[1.7rem] font-extrabold uppercase tracking-[0.06em] text-[#FB7185] [text-shadow:0_2px_0_#7F1D1D]">
+                Imposter
               </p>
-              <p className="m-0 mt-1 text-center text-[0.82rem] font-semibold text-white/70">
+              <p className="m-0 mt-0.5 text-center text-[0.82rem] font-semibold text-white/70">
                 {state.you.hint ?? 'Blend in and guess the word.'}
               </p>
               {state.you.teammates.length > 0 && (
@@ -159,12 +177,12 @@ export function RoomGame({ state, onExit }: RoomGameProps): JSX.Element {
                 </p>
               )}
             </>
-          ) : state.you.role === 'crew' ? (
+          ) : amCrew ? (
             <>
               <p className="m-0 mt-1 text-center font-display text-[1.7rem] font-extrabold text-white">
                 {state.you.word}
               </p>
-              <p className="m-0 mt-1 text-center text-[0.76rem] font-semibold text-white/55">
+              <p className="m-0 mt-0.5 text-center text-[0.76rem] font-semibold text-white/55">
                 Keep it secret — describe it without saying it.
               </p>
             </>
@@ -173,21 +191,33 @@ export function RoomGame({ state, onExit }: RoomGameProps): JSX.Element {
               {isDrawing ? 'One shared board — everyone adds to it in turn.' : 'Waiting for cards…'}
             </p>
           )}
+
+          {/* whose turn — inside the nav card, not floating above the chat */}
+          {state.phase === 'clues' && (
+            <div className="mt-2.5 flex items-center justify-between gap-2 rounded-[11px] bg-black/25 px-2.5 py-2 ring-1 ring-inset ring-white/10">
+              <span className="min-w-0">
+                <span className="block text-[0.62rem] font-extrabold uppercase tracking-[0.12em] text-[#C4B5FD]">
+                  {isDrawing ? 'Drawing now' : 'Writing now'}
+                </span>
+                <span
+                  className={[
+                    'block truncate text-[0.98rem] font-extrabold leading-tight',
+                    isMyTurn ? 'text-[#4ADE80]' : 'text-white',
+                  ].join(' ')}
+                >
+                  {isMyTurn ? 'Your turn' : upName}
+                </span>
+              </span>
+              <span className="shrink-0 rounded-full bg-white/10 px-2.5 py-1 text-[0.68rem] font-extrabold tabular-nums text-white/75">
+                {Math.min(state.clueIndex + 1, state.clueOrder.length)}/{state.clueOrder.length}
+              </span>
+            </div>
+          )}
+
           <p className="m-0 mt-2 text-center text-[0.68rem] font-bold uppercase tracking-[0.1em] text-white/40">
             {seated.filter((p) => p.ready).length}/{seated.length} ready
           </p>
         </div>
-      )}
-
-      {/* ---------- who is up ---------- */}
-      {state.phase === 'clues' && (
-        <p className="m-0 text-center text-[0.86rem] font-extrabold text-white">
-          <span className="text-[#C4B5FD]">{isDrawing ? 'Drawing:' : 'Now writing:'}</span>{' '}
-          {isMyTurn ? 'You' : upName}
-          <span className="ml-2 text-[0.7rem] font-bold text-white/45">
-            {Math.min(state.clueIndex + 1, state.clueOrder.length)}/{state.clueOrder.length}
-          </span>
-        </p>
       )}
 
       {/* ---------- the board (drawing rooms) ---------- */}

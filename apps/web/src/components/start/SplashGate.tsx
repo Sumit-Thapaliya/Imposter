@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type JSX } from 'react';
 import { LoadingScreen } from './LoadingScreen';
 import { StartScreen } from './StartScreen';
 
@@ -8,7 +8,7 @@ import { StartScreen } from './StartScreen';
  * Boot sequence: loading → start.
  * Kept as one component so the transition can be cross-faded later.
  */
-export function SplashGate() {
+export function SplashGate(): JSX.Element {
   const [phase, setPhase] = useState<'loading' | 'start'>('loading');
 
   if (phase === 'loading') {

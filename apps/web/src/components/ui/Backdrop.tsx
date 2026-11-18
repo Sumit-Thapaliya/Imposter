@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type JSX } from 'react';
 
 /**
  * Backdrop art, one painting per screen, in two orientations.
@@ -56,7 +56,7 @@ type Props = { screen: BackdropKey };
  * longer has to slice anything important off — the character and castle are
  * inside the safe area of both compositions.
  */
-export function Backdrop({ screen }: Props) {
+export function Backdrop({ screen }: Props) : JSX.Element {
   const isPortrait = useIsPortraitWindow();
   const art = BACKDROPS[screen];
   const src = isPortrait === false ? art.landscape : art.portrait;

@@ -1,6 +1,7 @@
+import type { JSX } from 'react';
 'use client';
 
-import type { DomainChoice } from '@/data/localConfig';
+import type { DomainChoice } from '@shared/game';
 
 /**
  * Domain icons.
@@ -8,7 +9,7 @@ import type { DomainChoice } from '@/data/localConfig';
  * Inline SVG on purpose — emoji glyphs depend on a system emoji font and render
  * as empty boxes on machines that lack one. These always look the same.
  */
-export function DomainGlyph({ id, className = 'h-5 w-5' }: { id: DomainChoice; className?: string }) {
+export function DomainGlyph({ id, className = 'h-5 w-5' }: { id: DomainChoice; className?: string }): JSX.Element | null {
   const common = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
 
   switch (id) {

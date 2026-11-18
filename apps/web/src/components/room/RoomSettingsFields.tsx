@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 'use client';
 
 import {
@@ -8,7 +9,7 @@ import {
   TEAM_MODES,
   maxImpostersFor,
   type RoomSettings,
-} from '@/lib/rooms/settings';
+} from '@shared/game/settings';
 
 /**
  * Host settings for a new online room.
@@ -215,7 +216,7 @@ export function RoomSettingsFields({
 }: {
   settings: RoomSettings;
   onChange: (patch: Partial<RoomSettings>) => void;
-}) {
+}): JSX.Element {
   const ceiling = maxImpostersFor(settings.capacity);
 
   return (

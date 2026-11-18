@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 'use client';
 
 /**
@@ -5,7 +6,7 @@
  * screen. Pure inline SVG — no network, no external assets.
  */
 
-export function WordArt() {
+export function WordArt(): JSX.Element {
   return (
     <svg
       viewBox="0 0 64 64"
@@ -36,7 +37,7 @@ export function WordArt() {
   );
 }
 
-export function DrawingArt() {
+export function DrawingArt(): JSX.Element {
   return (
     <svg
       viewBox="0 0 64 64"

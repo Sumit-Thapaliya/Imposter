@@ -11,7 +11,7 @@
  * Colour and brush size only — same constraint as the local pad.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type JSX } from 'react';
 import { BTN_RESET } from '@/components/local/controls';
 import { getSocket, send } from '@/lib/rooms/socket';
 import type { RoomState, Stroke } from '@shared/contract';
@@ -50,7 +50,7 @@ function paint(
   ctx.stroke();
 }
 
-export function OnlineBoard({ state, canDraw }: { state: RoomState; canDraw: boolean }) {
+export function OnlineBoard({ state, canDraw }: { state: RoomState; canDraw: boolean }): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const drawing = useRef(false);
   const points = useRef<number[]>([]);

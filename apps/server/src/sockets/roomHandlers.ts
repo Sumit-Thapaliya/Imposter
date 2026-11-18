@@ -568,9 +568,11 @@ export function registerRoomHandlers(io: Io): void {
       if (room.phase !== 'clues') return fail(ack, 'Drawing is not open.');
       if (currentCluePlayer(room)?.id !== player.id) return fail(ack, 'It is not your turn.');
       const points = cleanPoints(input?.points);
-      if (points.length < 4) return fail(ack, 'Bad stroke.');
+      const isFill = input?.kind === 'fill';
+      if (points.length < (isFill ? 2 : 4)) return fail(ack, 'Bad stroke.');
       const stroke = {
-        points,
+        ...(isFill ? { kind: 'fill' as const } : {}),
+        points: isFill ? points.slice(0, 2).map(n => Math.max(0, Math.min(1, n))) : points,
         color: clip(input.color, 24) || '#ffffff',
         size: Math.max(1, Math.min(40, Number(input.size) || 4)),
       };
@@ -586,7 +588,7 @@ export function registerRoomHandlers(io: Io): void {
       const found = session(socket);
       if (!found) return;
       const { room, player } = found;
-      if (room.mode !== 'drawing' || room.phase !== 'clues') return;
+      if (room.mode !== 'drawing' || room.phase !== 'clues' || currentCluePlayer(room)?.id !== player.id) return;
       socket.to(room.code).emit('draw:live', {
         playerId: player.id,
         points: cleanPoints(input?.points),

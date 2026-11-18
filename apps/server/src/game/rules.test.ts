@@ -14,11 +14,12 @@ import {
   resolveVotes,
   skipRoles,
   tally,
-  wordFor,
-  type PlayerRecord,
-  type RoomRecord,
 } from './rules.ts';
-import { publicStateFor } from '../rooms/store.ts';
+import { WORD_BANK, selectWord } from '../../../../packages/shared-types/src/wordBank';
+import { DOMAIN_IDS } from '../../../../packages/shared-types/src/localConfig';
+import { sanitiseSettings } from '../lib/settings.ts';
+import type { PlayerRecord, RoomRecord } from './rules.ts';
+import { publicStateFor, pushStroke } from '../rooms/store.ts';
 
 function player(id: string, name: string): PlayerRecord {
   return {
@@ -109,10 +110,10 @@ test('imposter teammates are only revealed when the host allows it', () => {
   const game = room();
   game.settings.imposters = 1;
   dealRound(game);
-  // force two imposters to check the reveal flag
+  // Reset the random deal before choosing two imposters for this test.
+  for (const player of game.players) player.role = 'crew';
   game.players[0]!.role = 'imposter';
   game.players[1]!.role = 'imposter';
-  game.players[2]!.role = 'crew';
 
   game.settings.revealTeammates = false;
   assert.deepEqual(publicStateFor(game, game.players[0]!).you.teammates, []);
@@ -213,5 +214,71 @@ test('the word never changes per player', () => {
   dealRound(game);
   const words = new Set(game.players.filter((p) => p.role === 'crew').map((p) => p.word));
   assert.equal(words.size, 1);
-  assert.equal([...words][0], wordFor('food').word);
+  assert.equal([...words][0], game.word);
+  assert.ok(WORD_BANK.food.some(entry => entry.word === game.word));
+});
+
+test('drawing fill is preserved in the room snapshot', () => {
+  const game = room();
+  pushStroke(game, { kind: 'fill', points: [0.5, 0.5], color: '#ff0000', size: 6 });
+  assert.equal(game.strokes[0]?.kind, 'fill');
+  assert.deepEqual(game.strokes[0]?.points, [0.5, 0.5]);
+});
+
+
+test('word banks have 200–300 unique words with non-revealing hints', () => {
+  for (const domain of DOMAIN_IDS) {
+    const bank = WORD_BANK[domain];
+    assert.ok(bank.length >= 200 && bank.length <= 300, `${domain}: ${bank.length}`);
+    assert.equal(new Set(bank.map(e => e.word.toLowerCase())).size, bank.length);
+    for (const entry of bank) {
+      assert.ok(entry.word.trim() && entry.hint.trim());
+      const escaped = entry.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      assert.doesNotMatch(entry.hint, new RegExp(`(?<![a-z])${escaped}(?![a-z])`, 'i')); 
+      assert.ok(bank.filter(other => other.hint === entry.hint).length >= 5, `${domain}: ${entry.hint}`);
+    }
+  }
+});
+
+test('domain selection, any, invalid input and avoiding immediate repeats', () => {
+  for (const domain of DOMAIN_IDS) {
+    assert.equal(selectWord(domain, () => 0).domain, domain);
+    assert.equal(selectWord(domain, () => 0).word, WORD_BANK[domain][0]!.word);
+  }
+  assert.equal(selectWord('any', () => 0).domain, 'food');
+  assert.equal(selectWord('any', () => 0.999999).domain, 'sports');
+  assert.equal(selectWord('bad-domain', () => 0).domain, 'food');
+  assert.notEqual(selectWord('food', () => 0, WORD_BANK.food[0]!.word).word, WORD_BANK.food[0]!.word);
+  assert.equal(sanitiseSettings({ domain: 'any' }).domain, 'any');
+  assert.equal(sanitiseSettings({ domain: 'bad-domain' }).domain, 'food');
+});
+
+test('the imposter receives only the correct hint, and no hint when disabled', () => {
+  const game = room();
+  game.settings.domain = 'animals';
+  dealRound(game);
+  const imposter = game.players.find(p => p.role === 'imposter')!;
+  const view = publicStateFor(game, imposter);
+  const selected = WORD_BANK.animals.find(entry => entry.word === game.word)!;
+  assert.equal(view.you.word, null);
+  assert.equal(view.you.hint, selected.hint);
+  assert.ok(!JSON.stringify(view).includes(game.word!));
+  game.settings.hints = false;
+  dealRound(game);
+  const nextImposter = game.players.find(p => p.role === 'imposter')!;
+  assert.equal(publicStateFor(game, nextImposter).you.hint, null);
+});
+
+test('deals follow each selected domain and keep one word per round', () => {
+  for (const domain of DOMAIN_IDS) {
+    const game = room();
+    game.settings.domain = domain;
+    for (let i = 0; i < 5; i++) {
+      const last = game.word;
+      dealRound(game);
+      assert.ok(WORD_BANK[domain].some(entry => entry.word === game.word));
+      if (last) assert.notEqual(game.word, last);
+      for (const p of game.players.filter(player => player.role === 'crew')) assert.equal(p.word, game.word);
+    }
+  }
 });

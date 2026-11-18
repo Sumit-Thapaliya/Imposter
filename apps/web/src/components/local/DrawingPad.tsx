@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type JSX } from 'react';
 import { BTN_RESET } from './controls';
 
 /**
@@ -34,7 +34,7 @@ export function DrawingPad({
   keepContent?: boolean;
   /** Shown as a chip in the corner, e.g. "Player 3". */
   turnLabel?: string;
-}) {
+}): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const drawingRef = useRef(false);
   const lastRef = useRef<{ x: number; y: number } | null>(null);

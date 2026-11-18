@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type JSX } from 'react';
 import { useRouter } from 'next/navigation';
 import { ScreenShell } from '@/components/ui/ScreenHeader';
+import { BackButton } from '@/components/ui/BackButton';
 import { WordArt, DrawingArt } from '@/components/ui/ModeIcon';
 import {
   Panel,
@@ -37,7 +38,7 @@ import {
   type VotingId,
   type TieId,
   type DifficultyId,
-} from '@/data/localConfig';
+} from '@shared/game';
 
 const TILE_TONE = {
   violet: 'bg-[linear-gradient(170deg,#A78BFA_0%,#7C3AED_100%)] shadow-[0_4px_0_#4C1D95]',
@@ -69,7 +70,7 @@ const TAB_LABELS: { id: TabId; label: string }[] = [
  * Every control is real state and `normalise()` keeps it valid. Nothing is
  * generated or persisted; Start Game hands the config to /local/play via the URL.
  */
-export function LocalSetupScreen({ mode }: { mode: LocalModeId }) {
+export function LocalSetupScreen({ mode }: { mode: LocalModeId }): JSX.Element {
   const router = useRouter();
   const [config, setConfig] = useState<LocalConfig>(DEFAULT_CONFIG);
   const [tab, setTab] = useState<TabId>('table');
@@ -132,22 +133,8 @@ export function LocalSetupScreen({ mode }: { mode: LocalModeId }) {
       <div className="relative z-[1] flex h-full w-full max-w-[560px] flex-col items-center justify-center gap-[clamp(8px,1.6dvh,14px)]">
         {/* header row — back, title, mode badge */}
         <div className="flex w-full items-center gap-2">
-          <button
-            type="button"
-            onClick={() => router.push('/game-mode?path=local')}
-            aria-label="Go back"
-            className={[
-              BTN_RESET,
-              'grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#0B0618]/72 text-white',
-              'ring-1 ring-inset ring-[#8B5CF6]/40 backdrop-blur-[3px]',
-              'transition-transform duration-fast ease-out hover:-translate-x-0.5',
-              'focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[2px] focus-visible:outline-[#FDE68A]',
-            ].join(' ')}
-          >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
-              <path d="M15 5l-7 7 7 7" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
+          <BackButton onClick={() => router.push('/game-mode?path=local')} />
+          <span className="h-11 w-11 shrink-0" aria-hidden="true" />
 
           <div className="min-w-0 flex-1 text-center">
             <h1 className="m-0 truncate font-display text-[clamp(1.25rem,5.4vw,1.7rem)] font-extrabold leading-tight text-white [text-shadow:0_2px_6px_rgba(0,0,0,0.7)]">

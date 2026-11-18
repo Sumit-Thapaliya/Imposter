@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type JSX } from 'react';
 import styles from './StartProgressBar.module.css';
 
 type Props = {
@@ -17,7 +17,7 @@ const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
  * Deliberately NOT tied to real loading — the asset preload already happened on the
  * loading screen; this is a short pacing beat so the CTA does not pop in instantly.
  */
-export function StartProgressBar({ duration = 1900, onDone }: Props) {
+export function StartProgressBar({ duration = 1900, onDone }: Props) : JSX.Element {
   const [pct, setPct] = useState(0);
 
   useEffect(() => {

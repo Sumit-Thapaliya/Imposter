@@ -1,9 +1,10 @@
+import type { JSX } from 'react';
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChoiceScreen } from '@/components/ui/ChoiceScreen';
 import { GameModeCard } from './GameModeCard';
-import { SORTED_GAME_MODES, NEXT_ROUTE, type GameMode, type PlayPath } from '@/data/modes';
+import { SORTED_GAME_MODES, NEXT_ROUTE, type GameMode, type PlayPath } from '@shared/game';
 
 /**
  * Choose Game Mode — ONE screen, reused by both branches.
@@ -11,7 +12,7 @@ import { SORTED_GAME_MODES, NEXT_ROUTE, type GameMode, type PlayPath } from '@/d
  *   /game-mode?path=local   → Local Setup   (no account, no names)
  *   /game-mode?path=online  → Host / Join Room (name asked there)
  */
-export function GameModeScreen() {
+export function GameModeScreen(): JSX.Element {
   const router = useRouter();
   const params = useSearchParams();
   const path: PlayPath = params.get('path') === 'online' ? 'online' : 'local';

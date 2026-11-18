@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type JSX } from 'react';
 import { StartBackdrop } from './StartBackdrop';
 import { LogoLockup } from './LogoLockup';
 import { PRELOAD_IMAGES, START_CHARACTERS } from '@/data/characters';
@@ -29,7 +29,7 @@ const STATUS_STEPS = [
  * - one character per tile, each in its own gesture
  * - tiles pop in one by one as their asset resolves
  */
-export function LoadingScreen({ onDone, minDuration = 1500, manual = false }: Props) {
+export function LoadingScreen({ onDone, minDuration = 1500, manual = false }: Props) : JSX.Element {
   const [progress, setProgress] = useState<PreloadProgress>({
     loaded: 0,
     total: PRELOAD_IMAGES.length,

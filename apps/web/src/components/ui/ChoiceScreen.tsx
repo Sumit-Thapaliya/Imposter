@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { ReactNode, JSX } from 'react';
 import { ScreenHeader, ScreenShell } from './ScreenHeader';
 import type { BackdropKey } from './Backdrop';
 import { CARD_GRID } from './choice';
@@ -25,7 +25,7 @@ type Props = {
  * line up pixel-for-pixel: header → badge row → cards → footer row.
  * Screens supply content only; they never position anything themselves.
  */
-export function ChoiceScreen({ title, subtitle, onBack, badge, children, footer, backdrop = 'playtype' }: Props) {
+export function ChoiceScreen({ title, subtitle, onBack, badge, children, footer, backdrop = 'playtype' }: Props) : JSX.Element {
   return (
     <ScreenShell backdrop={backdrop}>
       <div className="relative z-[1] flex h-full w-full max-w-[680px] flex-col items-center justify-center gap-[clamp(10px,2.2dvh,20px)]">

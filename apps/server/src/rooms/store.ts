@@ -203,8 +203,9 @@ export function publicStateFor(room: RoomRecord, viewer: PlayerRecord): RoomStat
   };
 }
 
-export function pushStroke(room: RoomRecord, stroke: { points: number[]; color: string; size: number }): void {
+export function pushStroke(room: RoomRecord, stroke: { points: number[]; color: string; size: number; kind?: 'fill' }): void {
   room.strokes.push({
+    ...(stroke.kind === 'fill' ? { kind: 'fill' as const } : {}),
     points: stroke.points.slice(-STROKE_LIMIT),
     color: stroke.color.slice(0, 24),
     size: Math.max(1, Math.min(40, stroke.size)),

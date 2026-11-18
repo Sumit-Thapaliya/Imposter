@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { Backdrop, type BackdropKey } from './Backdrop';
+import { BackButton } from './BackButton';
 
 type Props = {
   title: string;
@@ -16,24 +17,7 @@ type Props = {
 export function ScreenHeader({ title, subtitle, onBack }: Props) {
   return (
     <>
-      {onBack && (
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label="Go back"
-          className="absolute left-[clamp(14px,4vw,40px)] top-[clamp(12px,3dvh,30px)] z-20 grid h-[38px] w-[38px] place-items-center rounded-full bg-void/[0.72] text-text ring-1 ring-inset ring-violet/35 transition-transform duration-fast ease-out hover:-translate-x-0.5"
-        >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
-            <path
-              d="M15 5l-7 7 7 7"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-      )}
+      {onBack && <BackButton onClick={onBack} />}
 
       <header className="flex w-full flex-col items-center gap-1.5">
         <h1 className="m-0 text-center font-display text-[clamp(1.45rem,6vw,2.3rem)] font-extrabold leading-[1.12] text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.7),0_4px_20px_rgba(0,0,0,0.55)]">
@@ -57,12 +41,14 @@ export function ScreenHeader({ title, subtitle, onBack }: Props) {
 export function ScreenShell({
   children,
   backdrop = 'playtype',
+  scrollable = false,
 }: {
   children: ReactNode;
   backdrop?: BackdropKey;
+  scrollable?: boolean;
 }) {
   return (
-    <main className="relative isolate flex h-[100dvh] flex-col items-center justify-center overflow-hidden bg-void px-[clamp(12px,4vw,40px)] py-[clamp(12px,3dvh,30px)]">
+    <main className={`relative isolate flex h-[100dvh] flex-col items-center bg-void px-[clamp(12px,4vw,40px)] py-[clamp(12px,3dvh,30px)] ${scrollable ? 'justify-start overflow-y-auto max-sm:px-1' : 'justify-center overflow-hidden'}`}>
       <Backdrop screen={backdrop} />
       {children}
     </main>

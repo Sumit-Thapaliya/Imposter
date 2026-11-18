@@ -5,6 +5,7 @@
  * because a client can send anything. Never throws — bad input becomes defaults.
  */
 
+import { DOMAIN_IDS } from '../../../../packages/shared-types/src/localConfig';
 import type { RoomSettings } from '../../../../packages/shared-types/src/contract';
 
 export const MIN_PLAYERS = 3;
@@ -54,7 +55,7 @@ export function sanitiseSettings(input: unknown): RoomSettings {
     imposters: int(raw.imposters, DEFAULT_SETTINGS.imposters, 1, maxImposters(capacity)),
     imposterTeam: raw.imposterTeam === 'shared' ? 'shared' : 'separate',
     rounds: int(raw.rounds, DEFAULT_SETTINGS.rounds, 1, 5),
-    domain: typeof raw.domain === 'string' ? raw.domain.slice(0, 24) : DEFAULT_SETTINGS.domain,
+    domain: typeof raw.domain === 'string' && (raw.domain === 'any' || (DOMAIN_IDS as readonly string[]).includes(raw.domain)) ? raw.domain : DEFAULT_SETTINGS.domain,
     hints: bool(raw.hints, DEFAULT_SETTINGS.hints),
     revealTeammates: bool(raw.revealTeammates, DEFAULT_SETTINGS.revealTeammates),
     clueTimer: seconds('clueTimer', DEFAULT_SETTINGS.clueTimer),
