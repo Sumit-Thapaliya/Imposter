@@ -1,4 +1,12 @@
 /**
+ * Local game configuration — shared by web and mobile.
+ *
+ * Moved out of `apps/web/src/data` so the app and the website describe the same
+ * domains, ranges, presets and limits from one file. Pure data and types: no game
+ * logic lives here.
+ */
+
+/**
  * Local game configuration.
  *
  * Pure data + types. No game logic — this only describes the knobs the setup
@@ -77,22 +85,6 @@ export function maxImpostersFor(players: number): number {
   return Math.max(1, Math.min(3, Math.floor(players / 3)));
 }
 
-export type TimerId = 0 | 30 | 60 | 90;
-
-export const CLUE_TIMERS: { id: TimerId; label: string }[] = [
-  { id: 30, label: '30s' },
-  { id: 60, label: '60s' },
-  { id: 90, label: '90s' },
-  { id: 0, label: 'Off' },
-];
-
-export const DISCUSSION_TIMERS: { id: TimerId; label: string }[] = [
-  { id: 0, label: 'Off' },
-  { id: 30, label: '30s' },
-  { id: 60, label: '60s' },
-  { id: 90, label: '90s' },
-];
-
 /** How many words a player may use for their clue. 0 = say as much as you like. */
 export type ClueLimit = 0 | 1 | 2;
 
@@ -139,8 +131,6 @@ export type LocalConfig = {
   drawsPerTurn: number;
   /** a category, or `any` to let the game pick one at random */
   domain: DomainChoice;
-  clueTimer: TimerId;
-  discussionTimer: TimerId;
   clueLimit: ClueLimit;
 
   // voting
@@ -165,8 +155,6 @@ export const DEFAULT_CONFIG: LocalConfig = {
   rounds: 3,
   drawsPerTurn: 1,
   domain: 'food',
-  clueTimer: 60,
-  discussionTimer: 0,
   clueLimit: 1,
   voting: 'open',
   tieRule: 'revote',
@@ -181,9 +169,9 @@ export const DEFAULT_CONFIG: LocalConfig = {
 
 /** Patch a preset applies, leaving table size and domain alone. */
 export const PRESET_PATCH: Record<DifficultyId, Partial<LocalConfig>> = {
-  chill: { hints: true, clueTimer: 90, clueLimit: 0, discussionTimer: 60, imposterKnowsWord: false },
-  normal: { hints: true, clueTimer: 60, clueLimit: 1, discussionTimer: 0, imposterKnowsWord: false },
-  chaos: { hints: false, clueTimer: 30, clueLimit: 1, discussionTimer: 0, imposterKnowsWord: true },
+  chill: { hints: true, clueLimit: 0, imposterKnowsWord: false },
+  normal: { hints: true, clueLimit: 1, imposterKnowsWord: false },
+  chaos: { hints: false, clueLimit: 1, imposterKnowsWord: true },
 };
 
 /** Keep the config internally valid after any single field changes. */

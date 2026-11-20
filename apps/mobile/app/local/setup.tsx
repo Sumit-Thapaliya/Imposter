@@ -1,16 +1,14 @@
 import { useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
-import { ScreenShell } from '@/components/ui/Screen';
-import { colors, radius, shadow, spacing } from '@/theme/tokens';
+import { ScreenShell } from '../../src/components/ui/Screen';
+import { colors, radius, shadow, spacing } from '../../src/theme/tokens';
 import {
   CLUE_LIMITS,
-  CLUE_TIMERS,
   DEFAULT_CONFIG,
   DIFFICULTIES,
-  DISCUSSION_TIMERS,
   DOMAIN_CHOICES,
   DRAW_RANGE,
   PLAYER_RANGE,
@@ -21,7 +19,7 @@ import {
   normalise,
   type DifficultyId,
   type LocalConfig,
-} from '@shared/game';
+} from '../../src/shared/index';
 
 /**
  * Local setup — the app's version of the web form.
@@ -30,7 +28,7 @@ import {
  * `@shared/game`. What differs is presentation only: a phone has no room for a full
  * desktop grid, so the sections scroll inside one container and the CTA is pinned.
  *
- * Not done yet: the setup hands off to `/local/play`, which does not exist in the app.
+ * `Start game` pushes `/local/play` with every value as a route param.
  */
 
 type Tab = 'table' | 'round' | 'rules';
@@ -48,6 +46,19 @@ export default function LocalSetupScreen() {
 
   const [tab, setTab] = useState<Tab>('table');
   const [config, setConfig] = useState<LocalConfig>(DEFAULT_CONFIG);
+
+  /**
+   * Player names, one per seat. Blank is fine and common — an empty seat shows as
+   * "P3" in play, so naming nobody still works exactly like it used to.
+   */
+  const [names, setNames] = useState<string[]>([]);
+  const nameFor = (seat: number) => names[seat - 1] ?? '';
+  const setNameFor = (seat: number, value: string) =>
+    setNames((current) => {
+      const next = [...current];
+      next[seat - 1] = value;
+      return next;
+    });
 
   const accent = isWord ? VIOLET : ORANGE;
   const update = (patch: Partial<LocalConfig>) =>
@@ -190,6 +201,26 @@ export default function LocalSetupScreen() {
                   onChange={(imposters) => update({ imposters })}
                   accent={accent}
                 />
+                <Divider />
+                <Text style={styles.namesLabel}>Names</Text>
+                <Text style={styles.namesNote}>
+                  Optional — empty seats are just P1, P2, P3…
+                </Text>
+                <View style={styles.nameGrid}>
+                  {Array.from({ length: config.players }, (_, i) => i + 1).map((seat) => (
+                    <TextInput
+                      key={seat}
+                      value={nameFor(seat)}
+                      onChangeText={(value) => setNameFor(seat, value)}
+                      placeholder={`P${seat}`}
+                      placeholderTextColor={colors.textDim}
+                      maxLength={12}
+                      autoCorrect={false}
+                      accessibilityLabel={`Name for player ${seat}`}
+                      style={styles.nameInput}
+                    />
+                  ))}
+                </View>
               </Panel>
             </>
           )}
@@ -220,25 +251,7 @@ export default function LocalSetupScreen() {
                 )}
               </Panel>
 
-              <Panel title="Clocks">
-                <Chips
-                  label="Clue timer"
-                  options={CLUE_TIMERS.map((t) => ({ id: String(t.id), label: t.label }))}
-                  value={String(config.clueTimer)}
-                  onChange={(id) => update({ clueTimer: Number(id) as LocalConfig['clueTimer'] })}
-                  accent={accent}
-                />
-                <Divider />
-                <Chips
-                  label="Discussion timer"
-                  options={DISCUSSION_TIMERS.map((t) => ({ id: String(t.id), label: t.label }))}
-                  value={String(config.discussionTimer)}
-                  onChange={(id) =>
-                    update({ discussionTimer: Number(id) as LocalConfig['discussionTimer'] })
-                  }
-                  accent={accent}
-                />
-                <Divider />
+              <Panel title="Clues">
                 <Chips
                   label="Clue length"
                   options={CLUE_LIMITS.map((c) => ({ id: String(c.id), label: c.label }))}
@@ -319,9 +332,29 @@ export default function LocalSetupScreen() {
     </ScreenShell>
   );
 
-  /** Hands off to the play screen, which the app does not have yet. */
+  /**
+   * Hands the whole setup to the play screen as route params — the same contract the web
+   * route uses, so one screen reads the same values on both platforms.
+   */
   function start() {
-    Alert.alert('Coming soon', 'Local gameplay is not available in the mobile app yet.');
+    router.push({
+      pathname: '/local/play',
+      params: {
+        mode: isWord ? 'word' : 'drawing',
+        players: String(config.players),
+        names: Array.from({ length: config.players }, (_, i) => nameFor(i + 1).trim()).join(','),
+        imposters: String(config.imposters),
+        rounds: String(config.rounds),
+        drawsPerTurn: String(config.drawsPerTurn),
+        domain: config.domain,
+        clueLimit: String(config.clueLimit),
+        voting: config.voting,
+        tieRule: config.tieRule,
+        hints: String(config.hints),
+        revealWord: String(config.revealWord),
+        randomFirst: String(config.randomFirst),
+      },
+    });
   }
 }
 
@@ -492,7 +525,7 @@ const styles = StyleSheet.create({
   },
   titleWrap: { flex: 1, alignItems: 'center' },
   title: { fontSize: 22, fontWeight: '800', color: '#FFFFFF' },
-  subtitle: { fontSize: 12, fontWeight: '600', color: 'rgba(245,240,255,0.8)' },
+  subtitle: { fontSize: 13, fontWeight: '600', color: 'rgba(245,240,255,0.8)' },
   modeBadge: {
     height: 44,
     width: 44,
@@ -514,8 +547,8 @@ const styles = StyleSheet.create({
   tab: { flex: 1 },
   tabActive: { borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
   tabIdle: { borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
-  tabLabelActive: { color: '#FFFFFF', fontWeight: '800', fontSize: 13, letterSpacing: 0.6 },
-  tabLabel: { color: '#A99BC9', fontWeight: '800', fontSize: 13, letterSpacing: 0.6 },
+  tabLabelActive: { color: '#FFFFFF', fontWeight: '800', fontSize: 15, letterSpacing: 0.6 },
+  tabLabel: { color: '#A99BC9', fontWeight: '800', fontSize: 15, letterSpacing: 0.6 },
 
   scroll: { flex: 1 },
   scrollContent: { gap: 8, paddingBottom: 8 },
@@ -530,8 +563,8 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   panelHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  panelTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 1.4, color: '#C4B5FD' },
-  panelHint: { fontSize: 10, fontWeight: '700', color: 'rgba(245,240,255,0.45)' },
+  panelTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 1.4, color: '#C4B5FD' },
+  panelHint: { fontSize: 12, fontWeight: '700', color: 'rgba(245,240,255,0.45)' },
 
   segment: {
     flexDirection: 'row',
@@ -543,14 +576,14 @@ const styles = StyleSheet.create({
   segmentItem: { flex: 1 },
   segmentActive: { borderRadius: 10, paddingVertical: 8, paddingHorizontal: 4, alignItems: 'center' },
   segmentIdle: { borderRadius: 10, paddingVertical: 8, paddingHorizontal: 4, alignItems: 'center' },
-  segmentLabelActive: { fontSize: 12, fontWeight: '800', color: '#FFFFFF' },
-  segmentLabel: { fontSize: 12, fontWeight: '800', color: '#A99BC9' },
-  segmentNoteActive: { fontSize: 9, fontWeight: '600', color: 'rgba(255,255,255,0.85)', textAlign: 'center' },
-  segmentNote: { fontSize: 9, fontWeight: '600', color: 'rgba(169,155,201,0.8)', textAlign: 'center' },
+  segmentLabelActive: { fontSize: 13, fontWeight: '800', color: '#FFFFFF' },
+  segmentLabel: { fontSize: 13, fontWeight: '800', color: '#A99BC9' },
+  segmentNoteActive: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.85)', textAlign: 'center' },
+  segmentNote: { fontSize: 12, fontWeight: '600', color: 'rgba(169,155,201,0.8)', textAlign: 'center' },
 
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
-  rowLabel: { fontSize: 14, fontWeight: '700', color: '#F5F0FF', flexShrink: 1 },
-  rowNote: { fontSize: 10, fontWeight: '600', color: 'rgba(245,240,255,0.5)' },
+  rowLabel: { fontSize: 16, fontWeight: '700', color: '#F5F0FF', flexShrink: 1 },
+  rowNote: { fontSize: 12, fontWeight: '600', color: 'rgba(245,240,255,0.5)' },
   toggleText: { flex: 1, gap: 1 },
 
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -585,12 +618,29 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.12)',
   },
-  chipText: { fontSize: 11, fontWeight: '800', color: '#C9BCE6', letterSpacing: 0.3 },
+  chipText: { fontSize: 13, fontWeight: '800', color: '#C9BCE6', letterSpacing: 0.3 },
 
-  domainList: { fontSize: 11, fontWeight: '600', color: 'rgba(245,240,255,0.5)' },
+  domainList: { fontSize: 13, fontWeight: '600', color: 'rgba(245,240,255,0.5)' },
 
   divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.10)' },
 
+  namesLabel: { fontSize: 13, fontWeight: '800', color: colors.text, letterSpacing: 0.3 },
+  namesNote: { fontSize: 11, fontWeight: '600', color: colors.textDim, marginTop: 2 },
+  nameGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
+  nameInput: {
+    minWidth: 86,
+    flexGrow: 1,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.text,
+  },
+
   cta: { borderRadius: 15, paddingVertical: 14, alignItems: 'center' },
-  ctaText: { fontSize: 15, fontWeight: '800', letterSpacing: 1.4, color: '#FFFFFF' },
+  ctaText: { fontSize: 17, fontWeight: '800', letterSpacing: 1.4, color: '#FFFFFF' },
 });

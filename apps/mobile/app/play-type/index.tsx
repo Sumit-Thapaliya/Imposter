@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
-import { ChoiceCard, ScreenHeader, ScreenShell } from '@/components/ui/Screen';
-import { SORTED_PLAY_TYPES } from '@shared/game';
+import { ChoiceCard, ScreenHeader, ScreenShell } from '../../src/components/ui/Screen';
+import { LocalArt, OnlineArt } from '../../src/components/ui/ModeArt';
+import { SORTED_PLAY_TYPES } from '../../src/shared/index';
 import { StyleSheet, View } from 'react-native';
 
 /**
@@ -11,26 +12,6 @@ import { StyleSheet, View } from 'react-native';
  * `SORTED_PLAY_TYPES` from the shared package. The glyphs are drawn per platform: the web
  * ones are DOM elements, so there is nothing to share but the data.
  */
-
-function LocalGlyph() {
-  return (
-    <Svg viewBox="0 0 24 24" width={34} height={34}>
-      <Rect x="3" y="5" width="18" height="12" rx="2.5" stroke="#fff" strokeWidth={1.9} fill="none" />
-      <Path d="M8 20h8M12 17v3" stroke="#fff" strokeWidth={1.9} strokeLinecap="round" />
-    </Svg>
-  );
-}
-
-function OnlineGlyph() {
-  return (
-    <Svg viewBox="0 0 24 24" width={34} height={34}>
-      <Circle cx="9" cy="9" r="3.2" stroke="#fff" strokeWidth={1.9} fill="none" />
-      <Circle cx="16.5" cy="11" r="2.6" stroke="#fff" strokeWidth={1.9} fill="none" />
-      <Path d="M3.5 19c.6-3 2.9-4.6 5.5-4.6s4.9 1.6 5.5 4.6" stroke="#fff" strokeWidth={1.9} strokeLinecap="round" fill="none" />
-      <Path d="M15.5 18.8c.3-2 1.6-3.2 3.1-3.2 1.6 0 2.7 1.2 3 3" stroke="#fff" strokeWidth={1.9} strokeLinecap="round" fill="none" />
-    </Svg>
-  );
-}
 
 export default function PlayTypeScreen() {
   const router = useRouter();
@@ -50,7 +31,8 @@ export default function PlayTypeScreen() {
               title={type.title}
               subtitle={type.subtitle}
               accent={type.accent}
-              glyph={type.id === 'local' ? <LocalGlyph /> : <OnlineGlyph />}
+              glyph={type.id === 'local' ? <LocalArt /> : <OnlineArt />}
+              sound={type.id === 'local' ? 'select-local' : 'select-online'}
               onPress={() =>
                 router.push(type.id === 'local' ? '/game-mode?path=local' : '/game-mode?path=online')
               }
@@ -63,6 +45,7 @@ export default function PlayTypeScreen() {
 }
 
 const styles = StyleSheet.create({
-  body: { flex: 1, gap: 14, justifyContent: 'center' },
-  cards: { gap: 12 },
+  body: { flex: 1, gap: 14 },
+  /** flex: 1 on the row + on each card = the two cards split the screen, no dead space. */
+  cards: { gap: 12, flex: 1 },
 });

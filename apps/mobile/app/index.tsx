@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { SplashGate } from '@/components/start/SplashGate';
+import { SplashGate } from '../src/components/start/SplashGate';
 
 /**
  * Start → Select Play Type.

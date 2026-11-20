@@ -1,16 +1,12 @@
 {
-  "name": "@imposter-game/shared-game",
+  "name": "@imposter-game/shared-types",
   "version": "0.1.0",
   "private": true,
-  "description": "Game configuration shared by the web app, the mobile app and the server: domains, words, hints, mode manifests and room settings.",
+  "description": "Types shared by the web app, the mobile app and the socket server.",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./src/contract.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./localConfig": "./src/localConfig.ts",
-    "./modes": "./src/modes.ts",
-    "./wordBank": "./src/wordBank.ts",
-    "./settings": "./src/settings.ts"
+    ".": "./src/contract.ts",
+    "./contract": "./src/contract.ts"
   }
 }

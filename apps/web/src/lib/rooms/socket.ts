@@ -87,10 +87,6 @@ export function lastCode(): string | null {
 export function getSocket(): Client {
   if (socket) return socket;
   const target = connectTarget();
-  // Handy in the console (`__imposterSocket`) when a phone and a laptop disagree.
-  if (typeof window !== 'undefined') {
-    (window as unknown as { __imposterSocket?: unknown }).__imposterSocket = socket;
-  }
   socket = io(target.url, {
     path: PATH,
     transports: target.transports,
@@ -100,7 +96,28 @@ export function getSocket(): Client {
     reconnectionDelay: 500,
     reconnectionDelayMax: 4_000,
   });
+  // Handy in the console (`__imposterSocket`) when a phone and a laptop disagree.
+  if (typeof window !== 'undefined') {
+    (window as unknown as { __imposterSocket?: unknown }).__imposterSocket = socket;
+  }
   return socket;
+}
+
+/**
+ * Live connection state, so a screen can say "reconnecting…" instead of silently
+ * doing nothing while the phone is off wifi.
+ */
+export function watchConnection(onChange: (online: boolean) => void): () => void {
+  const client = getSocket();
+  const up = () => onChange(true);
+  const down = () => onChange(false);
+  client.on('connect', up);
+  client.on('disconnect', down);
+  onChange(client.connected);
+  return () => {
+    client.off('connect', up);
+    client.off('disconnect', down);
+  };
 }
 
 /**

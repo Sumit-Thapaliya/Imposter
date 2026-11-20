@@ -4,9 +4,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StartBackdrop } from './StartBackdrop';
 import { LogoLockup } from './LogoLockup';
-import { START_CHARACTERS } from '@/data/characters';
-import { BOOT_ASSETS, preloadAssets, wait, type LoadProgress } from '@/lib/preloadAssets';
-import { colors, gradients, radius } from '@/theme/tokens';
+import { START_CHARACTERS } from '../../data/characters';
+import { BOOT_ASSETS, preloadAssets, wait, type LoadProgress } from '../../lib/preloadAssets';
+import { colors, gradients, radius } from '../../theme/tokens';
+
+/**
+ * The loading screen's own artwork — a lit theatre stage drawn for this screen, portrait 9:19.5 so
+ * it fills a phone with no letterboxing. Drawn as cover, so it crops rather than stretching.
+ */
+const STAGE = require('../../../assets/backgrounds/stage-portrait-720.jpg');
 
 type Props = {
   onDone?: () => void;
@@ -36,10 +42,18 @@ export function LoadingScreen({ onDone, minDuration = 1500 }: Props) {
   const [ready, setReady] = useState(false);
   const doneRef = useRef(false);
   const barAnim = useRef(new Animated.Value(0)).current;
+  const heroOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     let alive = true;
     const started = Date.now();
+    /** Never let the loader own the app: if assets stall, move on anyway. */
+    const guard = setTimeout(() => {
+      if (alive && !doneRef.current) {
+        doneRef.current = true;
+        onDone?.();
+      }
+    }, minDuration + 4000);
 
     preloadAssets(BOOT_ASSETS, (p) => {
       if (alive) setProgress(p);
@@ -57,8 +71,17 @@ export function LoadingScreen({ onDone, minDuration = 1500 }: Props) {
 
     return () => {
       alive = false;
+      clearTimeout(guard);
     };
   }, [minDuration, onDone]);
+
+  useEffect(() => {
+    Animated.timing(heroOpacity, {
+      toValue: 1,
+      duration: 700,
+      useNativeDriver: true,
+    }).start();
+  }, [heroOpacity]);
 
   useEffect(() => {
     Animated.timing(barAnim, {
@@ -76,6 +99,24 @@ export function LoadingScreen({ onDone, minDuration = 1500 }: Props) {
   return (
     <View style={styles.root}>
       <StartBackdrop />
+      {/*
+        Full-bleed artwork. The tiles below used to be the only imagery, so the first screen a
+        player saw was a small thumbnail floating in empty space. One hero fills the screen and the
+        tiles sit on top of it as progress markers.
+      */}
+      <Animated.Image
+        source={STAGE}
+        style={[StyleSheet.absoluteFill, { opacity: heroOpacity }]}
+        resizeMode="cover"
+      />
+      {/* A dark scrim over the middle band only: the artwork's centre is bright, and the logo and
+          progress bar need contrast without dimming the top and bottom of the picture. */}
+      <LinearGradient
+        colors={['transparent', 'rgba(11,6,24,0.55)', 'rgba(11,6,24,0.55)', 'transparent']}
+        locations={[0.18, 0.34, 0.66, 0.82]}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      />
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         <View style={styles.content}>
           <LogoLockup tagline="Loading the crew…" />
@@ -161,6 +202,6 @@ const styles = StyleSheet.create({
   },
   fill: { flex: 1, borderRadius: radius.pill },
   meta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  status: { fontSize: 9, letterSpacing: 1.2, color: colors.textDim, fontWeight: '800' },
-  pct: { fontSize: 15, fontWeight: '800', color: colors.goldSoft },
+  status: { fontSize: 12, letterSpacing: 1.2, color: colors.textDim, fontWeight: '800' },
+  pct: { fontSize: 17, fontWeight: '800', color: colors.goldSoft },
 });

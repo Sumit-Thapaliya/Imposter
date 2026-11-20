@@ -35,6 +35,37 @@ import type { RoomState } from '@shared/contract';
  */
 type Connection = 'connecting' | 'live' | 'lost';
 
+/**
+ * One line telling the player whether the room is actually talking to the server.
+ *
+ * Without this a dropped phone just looks frozen: the screen keeps rendering the last
+ * snapshot and tapping a button does nothing until the ack times out.
+ */
+function ConnectionChip({ state }: { state: Connection }): JSX.Element {
+  if (state === 'live') {
+    return (
+      <span className="flex items-center gap-1.5 text-[0.68rem] font-extrabold uppercase tracking-[0.09em] text-[#7CF0B4]">
+        <span className="h-1.5 w-1.5 rounded-full bg-[#59EBAD] shadow-[0_0_8px_#59EBAD]" />
+        Live
+      </span>
+    );
+  }
+  if (state === 'lost') {
+    return (
+      <span role="status" className="flex items-center gap-1.5 text-[0.68rem] font-extrabold uppercase tracking-[0.09em] text-[#FFB0B8]">
+        <span className="h-1.5 w-1.5 rounded-full bg-[#FF7A8A] shadow-[0_0_8px_#FF7A8A]" />
+        Reconnecting…
+      </span>
+    );
+  }
+  return (
+    <span role="status" className="flex items-center gap-1.5 text-[0.68rem] font-extrabold uppercase tracking-[0.09em] text-[#E3C77A]">
+      <span className="h-1.5 w-1.5 rounded-full bg-[#FFCF50]" />
+      Connecting
+    </span>
+  );
+}
+
 const avatars = [
   { id: 'crew-red', label: 'Red', image: '/characters/thumbs/crew-red.webp' },
   { id: 'cyber-neon', label: 'Neon', image: '/characters/thumbs/cyber-neon.webp' },
@@ -78,6 +109,8 @@ export function RoomScreen(): JSX.Element {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [connection, setConnection] = useState<Connection>('connecting');
+  /** Lobby-only gear: the host edits the room they already created. */
+  const [lobbySettings, setLobbySettings] = useState<RoomSettings | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [overflowing, setOverflowing] = useState(false);
 
@@ -86,6 +119,12 @@ export function RoomScreen(): JSX.Element {
   function patchSettings(patch: Partial<RoomSettings>) {
     setSettings((current) => normaliseSettings({ ...current, ...patch }));
   }
+
+  /** The sheet shows what the server just confirmed, not what we hoped for. */
+  useEffect(() => {
+    if (!room || !lobbySettings) return;
+    setLobbySettings((current) => (current ? room.settings : current));
+  }, [room?.settings]);
 
   // Is there more below the fold? Drives the fade, in place of a scrollbar.
   useEffect(() => {
@@ -202,6 +241,28 @@ export function RoomScreen(): JSX.Element {
   async function act(event: 'room:start' | 'game:again' | 'game:toLobby' | 'game:nextRound') {
     const ack = await send(event);
     if (!ack.ok) setError(ack.error ?? 'That did not work.');
+  }
+
+  /**
+   * Save the host's edits. The server locks this to the lobby and keeps `capacity`
+   * (it is the seat count the room was created with), so a room can never shrink
+   * below the people already sitting in it.
+   */
+  async function saveLobbySettings(next: RoomSettings) {
+    setLobbySettings(next);
+    const ack = await send('room:settings', { settings: next });
+    if (!ack.ok) setError(ack.error ?? 'Could not save the settings.');
+  }
+
+  async function passHost(playerId: string) {
+    const ack = await send('room:transferHost', { playerId });
+    if (!ack.ok) setError(ack.error ?? 'Could not pass host.');
+  }
+
+  async function kick(playerId: string) {
+    const ack = await send('room:kick', { playerId });
+    if (!ack.ok) setError(ack.error ?? 'Could not remove that player.');
+    else setLobbySettings(null);
   }
 
   async function copyCode() {
@@ -451,6 +512,7 @@ export function RoomScreen(): JSX.Element {
                       {room.code}
                     </strong>
                   </div>
+                  <div className="flex flex-col items-end gap-1.5">
                   <button
                     type="button"
                     onClick={copyCode}
@@ -463,6 +525,8 @@ export function RoomScreen(): JSX.Element {
                   >
                     {copied ? 'Copied ✓' : 'Copy code'}
                   </button>
+                  <ConnectionChip state={connection} />
+                  </div>
                 </div>
 
                 <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -514,6 +578,27 @@ export function RoomScreen(): JSX.Element {
                           Host
                         </span>
                       )}
+                      {isHost && player.id !== room.you.id && (
+                        <span className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => void passHost(player.id)}
+                            title={`Make ${player.name} the host`}
+                            className={`${BTN_RESET} rounded-lg bg-[#4B3675]/80 px-2 py-1 text-[0.66rem] font-extrabold uppercase tracking-[0.08em] text-[#E9DCFF] hover:bg-[#5B4389]`}
+                          >
+                            Make host
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void kick(player.id)}
+                            title={`Remove ${player.name}`}
+                            aria-label={`Remove ${player.name} from the room`}
+                            className={`${BTN_RESET} rounded-lg bg-[#7A244A]/70 px-2 py-1 text-[0.66rem] font-extrabold uppercase tracking-[0.08em] text-[#FFD1D8] hover:bg-[#93305A]`}
+                          >
+                            Remove
+                          </button>
+                        </span>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -525,14 +610,52 @@ export function RoomScreen(): JSX.Element {
                 )}
 
                 {isHost ? (
-                  <button
-                    type="button"
-                    onClick={() => void act('room:start')}
-                    disabled={room.players.filter((p) => !p.spectator).length < 3}
-                    className={`${PRIMARY} mt-3.5`}
-                  >
-                    Start game <span aria-hidden="true">→</span>
-                  </button>
+                  <>
+                    <div className="mt-3.5 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void act('room:start')}
+                        disabled={room.players.filter((p) => !p.spectator).length < 3}
+                        className={`${PRIMARY} flex-1`}
+                      >
+                        Start game <span aria-hidden="true">→</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLobbySettings(room.settings)}
+                        className={`${BTN_RESET} rounded-[13px] bg-[#4B3675] px-3.5 text-[0.8rem] font-extrabold text-[#E9DCFF] hover:bg-[#5B4389]`}
+                      >
+                        Settings
+                      </button>
+                    </div>
+
+                    {lobbySettings && (
+                      <div className="mt-3 rounded-[15px] bg-[#2A1D4A]/80 p-3 ring-1 ring-inset ring-[#6C5693]/50">
+                        <div className="mb-1 flex items-center justify-between">
+                          <strong className="text-[0.8rem] font-extrabold uppercase tracking-[0.12em] text-[#C4B5FD]">
+                            Room settings
+                          </strong>
+                          <button
+                            type="button"
+                            onClick={() => setLobbySettings(null)}
+                            className={`${BTN_RESET} text-[0.74rem] font-extrabold uppercase tracking-[0.08em] text-[#B9A6D6] hover:text-white`}
+                          >
+                            Close
+                          </button>
+                        </div>
+                        <RoomSettingsFields
+                          settings={lobbySettings}
+                          onChange={(patch) =>
+                            void saveLobbySettings(normaliseSettings({ ...lobbySettings, ...patch }))
+                          }
+                        />
+                        <p className="m-0 mt-2 text-[0.7rem] font-semibold text-[#A996C8]">
+                          Changes save instantly and apply to the whole room. Seat count cannot
+                          change once the room exists.
+                        </p>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="mt-3.5 flex items-center justify-center gap-2 text-[0.86rem] font-bold text-[#D9CAEC]">
                     <span className="inline-block h-2 w-2 rounded-full bg-[#59EBAD] shadow-[0_0_10px_#59EBAD]" />

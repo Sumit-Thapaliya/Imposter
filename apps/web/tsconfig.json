@@ -23,10 +23,10 @@
         "../../packages/shared-types/src/contract.ts"
       ],
       "@shared/game": [
-        "../../packages/shared-types/src/index.ts"
+        "../../packages/shared-game/src/index.ts"
       ],
       "@shared/game/*": [
-        "../../packages/shared-types/src/*"
+        "../../packages/shared-game/src/*"
       ]
     }
   },

@@ -21,6 +21,17 @@ export const IMPOSTER_RANGE = { min: 1, max: 3 } as const;
 export const ROUND_RANGE = { min: 1, max: 5 } as const;
 
 /** How players talk during online play. A room always has at least one channel. */
+/** `any` lets the server pick a category per round, like local play. */
+export const ROOM_DOMAIN_CHOICES: { id: string; label: string }[] = [
+  { id: 'any', label: 'Any' },
+  { id: 'food', label: 'Food' },
+  { id: 'animals', label: 'Animals' },
+  { id: 'places', label: 'Places' },
+  { id: 'movies', label: 'Movies' },
+  { id: 'objects', label: 'Objects' },
+  { id: 'sports', label: 'Sports' },
+];
+
 export type ChannelMode = 'chat' | 'voice' | 'both';
 
 export const CHANNEL_MODES: { id: ChannelMode; label: string; note: string }[] = [

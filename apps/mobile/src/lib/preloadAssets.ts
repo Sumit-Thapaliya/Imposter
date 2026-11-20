@@ -1,5 +1,5 @@
 import { Asset } from 'expo-asset';
-import { START_CHARACTERS, BACKGROUNDS } from '@/data/characters';
+import { START_CHARACTERS, BACKGROUNDS } from '../data/characters';
 
 export type LoadProgress = { loaded: number; total: number; ratio: number };
 

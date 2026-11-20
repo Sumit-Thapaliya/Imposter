@@ -49,6 +49,6 @@ export const START_CHARACTERS: StartCharacter[] = [
 export const STAGE_CHARACTERS = [...START_CHARACTERS].sort((a, b) => a.order - b.order);
 
 export const BACKGROUNDS = {
-  portrait: require('../../assets/backgrounds/fantasy-party-portrait-720.jpg'),
-  landscape: require('../../assets/backgrounds/fantasy-party-landscape-1280.jpg'),
+  portrait: require('../../assets/backgrounds/stage-portrait-720.jpg'),
+  landscape: require('../../assets/backgrounds/stage-portrait-1080.jpg'),
 };

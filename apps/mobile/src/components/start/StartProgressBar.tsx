@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, gradients, radius } from '@/theme/tokens';
+import { colors, gradients, radius } from '../../theme/tokens';
 
 type Props = {
   /** how long the bar takes to fill, in ms */
@@ -86,6 +86,6 @@ const styles = StyleSheet.create({
   fillWrap: { height: '100%', borderRadius: radius.pill, overflow: 'hidden' },
   fill: { flex: 1 },
   meta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingHorizontal: 2 },
-  label: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, color: colors.textDim },
-  pct: { fontSize: 9, fontWeight: '800', letterSpacing: 0.7, color: colors.goldSoft },
+  label: { fontSize: 12, fontWeight: '800', letterSpacing: 1.2, color: colors.textDim },
+  pct: { fontSize: 12, fontWeight: '800', letterSpacing: 0.7, color: colors.goldSoft },
 });

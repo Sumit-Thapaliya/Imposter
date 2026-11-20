@@ -478,6 +478,11 @@ export function registerRoomHandlers(io: Io): void {
       if (targetId !== null && !seatedPlayers(room).some((p) => p.id === targetId)) {
         return fail(ack, 'That player has left.');
       }
+      /**
+       * One vote each. Without this a fast double-tap could overwrite a vote, and —
+       * worse — a client could re-vote after seeing the tally when voting is open.
+       */
+      if (room.votes.has(player.id)) return fail(ack, 'You have already voted.');
       room.votes.set(player.id, targetId ?? null);
       if (everyoneVoted(room)) finishRound(io, room);
       else broadcast(io, room);
@@ -630,7 +635,15 @@ export function registerRoomHandlers(io: Io): void {
       if (!found) return fail(ack, 'You are not in a room.');
       const { room, player } = found;
       if (room.mode !== 'drawing') return fail(ack, 'This room is not drawing.');
-      if (!canAdvance(room, player)) return fail(ack, 'Only the host can clear the board.');
+      /**
+       * Whoever is holding the pen can wipe their own board, exactly as the local
+       * drawing pad lets a player clear it. The host keeps the power too, so a room can
+       * always be rescued.
+       */
+      const drawerId = currentCluePlayer(room)?.id;
+      if (!canAdvance(room, player) && player.id !== drawerId) {
+        return fail(ack, 'Only the player drawing — or the host — can clear the board.');
+      }
       room.strokes = [];
       bump(room);
       io.to(room.code).emit('draw:clear');

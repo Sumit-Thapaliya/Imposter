@@ -1,4 +1,11 @@
 /**
+ * Secret words and imposter hints — shared by web, mobile and the server.
+ *
+ * The server used to keep its own copy of these strings; both now read this file,
+ * so a word change cannot drift between online and local play.
+ */
+
+/**
  * Placeholder secret words.
  *
  * One fixed word per domain — the real word bank is still to come. Everything

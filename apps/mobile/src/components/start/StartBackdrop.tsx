@@ -2,8 +2,8 @@ import { useEffect, useRef } from 'react';
 import { Animated, Dimensions, Easing, ImageBackground, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
-import { BACKGROUNDS } from '@/data/characters';
-import { colors } from '@/theme/tokens';
+import { BACKGROUNDS } from '../../data/characters';
+import { colors } from '../../theme/tokens';
 
 type Props = { reveal?: number };
 

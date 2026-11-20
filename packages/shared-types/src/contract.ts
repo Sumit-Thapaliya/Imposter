@@ -61,7 +61,7 @@ export type RoomSettings = {
 
 /* ----------------------------------------------------------------------- state */
 
-export type Stroke = { points: number[]; color: string; size: number; kind?: 'fill' }; 
+export type Stroke = { points: number[]; color: string; size: number };
 
 export type PublicPlayer = {
   id: string;
@@ -239,7 +239,7 @@ export type ClientToServerEvents = {
 
   /** drawing mode: one finished stroke, normalised 0..1 against the board */
   'draw:stroke': (
-    input: Stroke,
+    input: { points: number[]; color: string; size: number },
     ack?: (result: Ack) => void,
   ) => void;
   'draw:clear': (ack?: (result: Ack) => void) => void;

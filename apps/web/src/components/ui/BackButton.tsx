@@ -1,6 +1,8 @@
 import type { JSX } from 'react';
 'use client';
 
+import { playTone } from '@/lib/audio';
+
 
 
 /**
@@ -41,7 +43,10 @@ export function BackButton({
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={() => {
+          playTone('tap');
+          onClick?.();
+        }}
       aria-label={label}
       className={[BACK_BUTTON_CLASS, className ?? ''].join(' ')}
     >

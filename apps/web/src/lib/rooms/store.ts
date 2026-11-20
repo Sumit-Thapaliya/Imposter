@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { DEFAULT_SETTINGS, normaliseSettings, parseSettings, type RoomSettings } from './settings';
+import { DEFAULT_SETTINGS, normaliseSettings, parseSettings, type RoomSettings } from '@shared/game/settings';
 
 // Prototype storage: all players must reach the same running server process.
 export const avatars = ['crew-red', 'cyber-neon', 'galaxy-cosmic', 'premium-galaxy', 'premium-gold', 'premium-neon'] as const;

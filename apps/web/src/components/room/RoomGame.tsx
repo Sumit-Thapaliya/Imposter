@@ -18,7 +18,7 @@
 
 import { useEffect, useRef, useState, type JSX } from 'react';
 import { BTN_RESET } from '@/components/local/controls';
-import { CHANNEL_MODES } from '@/lib/rooms/settings';
+import { CHANNEL_MODES } from '@shared/game/settings';
 import { send } from '@/lib/rooms/socket';
 import type { RoomState } from '@shared/contract';
 import { OnlineBoard } from './OnlineBoard';

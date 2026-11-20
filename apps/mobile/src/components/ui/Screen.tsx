@@ -3,8 +3,10 @@ import { Animated, ImageBackground, Pressable, StyleSheet, Text, View } from 're
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BACKGROUNDS } from '@/data/characters';
-import { colors, radius, shadow, spacing } from '@/theme/tokens';
+import { BACKGROUNDS } from '../../data/characters';
+import { playTone, type ToneName } from '../../lib/audio';
+import { SoundToggle } from './SoundToggle';
+import { colors, radius, shadow, spacing } from '../../theme/tokens';
 
 /**
  * Screen furniture for the app — the native twin of `ui/ScreenShell` + `ui/ScreenHeader`
@@ -45,7 +47,10 @@ export function ScreenShell({
 export function BackButton({ onPress, label = 'Go back' }: { onPress: () => void; label?: string }) {
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        playTone('tap');
+        onPress();
+      }}
       accessibilityRole="button"
       accessibilityLabel={label}
       hitSlop={8}
@@ -80,6 +85,11 @@ export function ScreenHeader({
     <View style={styles.header}>
       <View style={styles.headerRow}>
         {onBack ? <BackButton onPress={onBack} /> : <View style={styles.backSpacer} />}
+        {/* Sound is a session-wide preference, so the control lives in the shared header instead
+            of being repeated screen by screen. */}
+        <View style={styles.soundSlot}>
+          <SoundToggle />
+        </View>
       </View>
       <Text style={styles.title}>{title}</Text>
       {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
@@ -113,12 +123,15 @@ export function ChoiceCard({
   subtitle,
   accent,
   glyph,
+  sound,
   onPress,
 }: {
   title: string;
   subtitle: string;
   accent: 'local' | 'online' | 'violet' | 'orange';
   glyph: React.ReactNode;
+  /** The cue for this specific card; each of the four has its own voice. */
+  sound?: ToneName;
   onPress: () => void;
 }) {
   const scale = useRef(new Animated.Value(1)).current;
@@ -138,11 +151,15 @@ export function ChoiceCard({
   return (
     <Animated.View style={[styles.cardWrap, { transform: [{ scale }] }]}>
       <Pressable
-        onPress={onPress}
+        onPress={() => {
+          playTone(sound ?? 'tap');
+          onPress();
+        }}
         onPressIn={() => animate(0.97)}
         onPressOut={() => animate(1)}
         accessibilityRole="button"
         accessibilityLabel={title}
+        style={styles.cardPress}
       >
         <View style={[styles.cardEdge, { backgroundColor: edge }]}>
           <LinearGradient
@@ -151,6 +168,9 @@ export function ChoiceCard({
             end={{ x: 0.8, y: 1 }}
             style={styles.cardFace}
           >
+            {/* A soft disc behind the glyph. Previously the icon was white-on-colour with a
+                dark edge that only appeared at certain sizes, which read as a stray default icon
+                rather than deliberate art. */}
             <View style={styles.cardGlyph}>{glyph}</View>
             <Text style={styles.cardTitle}>{title}</Text>
             <Text style={styles.cardSubtitle}>{subtitle}</Text>
@@ -187,7 +207,8 @@ const styles = StyleSheet.create({
   backSpacer: { height: 44, width: 44 },
 
   header: { alignItems: 'center', gap: 2 },
-  headerRow: { flexDirection: 'row', alignSelf: 'stretch' },
+  headerRow: { flexDirection: 'row', alignSelf: 'stretch', justifyContent: 'space-between' },
+  soundSlot: { alignItems: 'flex-end' },
   title: {
     fontSize: 28,
     fontWeight: '800',
@@ -197,7 +218,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 8,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '600',
     color: 'rgba(245,240,255,0.84)',
     textAlign: 'center',
@@ -211,19 +232,30 @@ const styles = StyleSheet.create({
   },
   badgeLocal: { backgroundColor: 'rgba(34,197,94,0.15)', borderColor: 'rgba(34,197,94,0.45)' },
   badgeOnline: { backgroundColor: 'rgba(47,139,245,0.15)', borderColor: 'rgba(47,139,245,0.45)' },
-  badgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 1.2 },
+  badgeText: { fontSize: 12, fontWeight: '800', letterSpacing: 1.2 },
 
-  cardWrap: { width: '100%' },
-  cardEdge: { borderRadius: radius.lg, paddingBottom: 5, ...shadow.card },
+  /** flex: 1 so a single card can fill the screen; two cards split it evenly. */
+  cardWrap: { width: '100%', flex: 1 },
+  cardPress: { flex: 1 },
+  cardEdge: { borderRadius: radius.lg, paddingBottom: 5, flex: 1, ...shadow.card },
   cardFace: {
     borderRadius: radius.lg,
     paddingHorizontal: spacing.s4,
     paddingVertical: spacing.s4,
+    flex: 1,
     minHeight: 150,
     justifyContent: 'center',
     gap: 4,
   },
-  cardGlyph: { marginBottom: 6 },
+  cardGlyph: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.22)',
+  },
   cardTitle: { fontSize: 26, fontWeight: '800', color: '#FFFFFF' },
-  cardSubtitle: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.85)', lineHeight: 18 },
+  cardSubtitle: { fontSize: 15, fontWeight: '600', color: 'rgba(255,255,255,0.85)', lineHeight: 18 },
 });

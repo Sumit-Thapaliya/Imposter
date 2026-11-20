@@ -1,4 +1,8 @@
 /**
+ * Play-type and game-mode manifests — shared by web and mobile.
+ */
+
+/**
  * Play-type and game-mode manifests.
  * Shared shape between web and mobile so both branches render from one source.
  * Icons are referenced by key — the visuals live in the components.

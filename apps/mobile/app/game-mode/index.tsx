@@ -1,8 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Alert, StyleSheet, View } from 'react-native';
-import Svg, { Path, Rect } from 'react-native-svg';
-import { ChoiceCard, ScreenHeader, ScreenShell } from '@/components/ui/Screen';
-import { SORTED_GAME_MODES } from '@shared/game';
+import { StyleSheet, View } from 'react-native';
+import { ChoiceCard, ScreenHeader, ScreenShell } from '../../src/components/ui/Screen';
+import { SORTED_GAME_MODES } from '../../src/shared/index';
+import { DrawingArt, WordArt } from '../../src/components/ui/ModeArt';
 
 /**
  * Choose Game Mode — Word or Drawing.
@@ -10,24 +10,6 @@ import { SORTED_GAME_MODES } from '@shared/game';
  * `path` decides where back goes and where a card leads. The two modes keep their own
  * colours (violet and orange) exactly as they do on the website.
  */
-
-function WordGlyph() {
-  return (
-    <Svg viewBox="0 0 24 24" width={34} height={34}>
-      <Rect x="3" y="4" width="18" height="16" rx="3" stroke="#fff" strokeWidth={1.9} fill="none" />
-      <Path d="M7 9.5h10M7 13h7" stroke="#fff" strokeWidth={1.9} strokeLinecap="round" />
-    </Svg>
-  );
-}
-
-function DrawingGlyph() {
-  return (
-    <Svg viewBox="0 0 24 24" width={34} height={34}>
-      <Path d="M4 20l3.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z" stroke="#fff" strokeWidth={1.9} strokeLinejoin="round" fill="none" />
-      <Path d="M13.5 6.5l4 4" stroke="#fff" strokeWidth={1.9} strokeLinecap="round" />
-    </Svg>
-  );
-}
 
 export default function GameModeScreen() {
   const router = useRouter();
@@ -50,14 +32,15 @@ export default function GameModeScreen() {
               title={mode.title}
               subtitle={mode.subtitle}
               accent={mode.accent}
-              glyph={mode.id === 'word' ? <WordGlyph /> : <DrawingGlyph />}
-              onPress={() => {
-                if (isOnline) {
-                  Alert.alert('Coming soon', 'Online rooms are not available in the mobile app yet.');
-                  return;
-                }
-                router.push({ pathname: '/local/setup', params: { mode: mode.id } });
-              }}
+              glyph={mode.id === 'word' ? <WordArt /> : <DrawingArt />}
+              sound={mode.id === 'word' ? 'select-word' : 'select-drawing'}
+              onPress={() =>
+                router.push(
+                  isOnline
+                    ? { pathname: '/room', params: { mode: mode.id } }
+                    : { pathname: '/local/setup', params: { mode: mode.id } },
+                )
+              }
             />
           ))}
         </View>
@@ -67,6 +50,7 @@ export default function GameModeScreen() {
 }
 
 const styles = StyleSheet.create({
-  body: { flex: 1, gap: 14, justifyContent: 'center' },
-  cards: { gap: 12 },
+  body: { flex: 1, gap: 14 },
+  /** flex: 1 on the row + on each card = the two cards split the screen, no dead space. */
+  cards: { gap: 12, flex: 1 },
 });

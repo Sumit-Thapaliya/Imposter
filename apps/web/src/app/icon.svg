@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="tile" x1="512" y1="0" x2="512" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#331E60"/>
+      <stop offset="1" stop-color="#0B0618"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="512" cy="520" r="430" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C3AED" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#7C3AED" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mask" x1="512" y1="268" x2="512" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C4B5FD"/>
+      <stop offset="0.30" stop-color="#9B7BF5"/>
+      <stop offset="1" stop-color="#5B21B6"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="512" y1="150" x2="512" y2="290" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FDE68A"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" rx="230" fill="url(#tile)"/>
+  <rect x="0" y="0" width="1024" height="1024" rx="230" fill="url(#glow)"/>
+
+
+  <!-- the mask -->
+  <path d="M512 300 C 632 300 726 350 726 436 C 726 594 626 726 512 786
+           C 398 726 298 594 298 436 C 298 350 392 300 512 300 Z"
+        fill="url(#mask)" stroke="#2E1065" stroke-width="26" stroke-linejoin="round"/>
+  <path d="M366 430 C 366 512 396 584 442 636" stroke="#F5F0FF" stroke-opacity="0.5"
+        stroke-width="30" stroke-linecap="round" fill="none"/>
+
+  <g transform="translate(512,528) scale(1.22) translate(-512,-512)">
+<!-- crown worn on the head -->
+  <path d="M352 306 L392 240 L446 296 L512 208 L578 296 L632 240 L672 306
+           C676 316 670 328 658 328 L366 328 C354 328 348 316 352 306 Z"
+        fill="url(#gold)" stroke="#B07D06" stroke-width="14" stroke-linejoin="round"/>
+  <rect x="384" y="330" width="256" height="24" rx="12" fill="url(#gold)" stroke="#8A6104" stroke-width="10"/>
+
+  <!-- eyes: real holes in the mask -->
+  <ellipse cx="428" cy="486" rx="52" ry="58" fill="#0B0618"/>
+  <ellipse cx="596" cy="486" rx="52" ry="58" fill="#0B0618"/>
+  <circle cx="444" cy="466" r="17" fill="#C4B5FD"/>
+  <circle cx="612" cy="466" r="17" fill="#C4B5FD"/>
+
+  <!-- smirk -->
+  <path d="M452 618 C 480 646 512 660 512 660 C 512 660 544 646 572 618"
+        stroke="#2E1065" stroke-width="30" stroke-linecap="round" fill="none"/>
+</g>
+</svg>

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ChoiceScreen } from '@/components/ui/ChoiceScreen';
 import { GameModeCard } from './GameModeCard';
 import { SORTED_GAME_MODES, NEXT_ROUTE, type GameMode, type PlayPath } from '@shared/game';
+import { playTone } from '@/lib/audio';
 
 /**
  * Choose Game Mode — ONE screen, reused by both branches.
@@ -18,6 +19,7 @@ export function GameModeScreen(): JSX.Element {
   const path: PlayPath = params.get('path') === 'online' ? 'online' : 'local';
 
   function handleSelect(id: GameMode['id']) {
+    playTone(id === 'drawing' ? 'select-drawing' : 'select-word');
     router.push(`${NEXT_ROUTE[path]}?mode=${id}`);
   }
 

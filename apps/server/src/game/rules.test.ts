@@ -162,7 +162,7 @@ test('ejecting a crew member is an imposter win', () => {
   assert.equal(result.winner, 'imposters');
 });
 
-test('a tie ejects nobody and the imposters take it', () => {
+test('a tie ejects nobody and nobody scores', () => {
   const game = room();
   dealRound(game);
   game.votes.set('p1', 'p2');
@@ -171,7 +171,8 @@ test('a tie ejects nobody and the imposters take it', () => {
   game.votes.set('p4', 'p3');
   const result = resolveVotes(game);
   assert.equal(result.ejectedId, null);
-  assert.equal(result.winner, 'imposters');
+  assert.equal(result.winner, 'none');
+  assert.ok(game.players.every((p) => p.score === 0));
 });
 
 test('secret voting withholds who voted for whom until the result', () => {
@@ -200,12 +201,29 @@ test('everyone has to vote before the round can close', () => {
   assert.equal(everyoneVoted(game), true);
 });
 
-test('drawing mode skips roles entirely', () => {
+test('a round where nobody votes is nobody\'s win', () => {
+  const game = room();
+  dealRound(game);
+  const result = resolveVotes(game);
+  assert.equal(result.winner, 'none');
+  assert.equal(result.ejectedId, null);
+  // and no points are handed out
+  assert.ok(game.players.every((p) => p.score === 0));
+});
+
+test('drawing mode deals roles but skips the card round', () => {
   const game = room({ mode: 'drawing' });
   skipRoles(game);
   assert.equal(game.phase, 'clues');
-  assert.equal(game.word, null);
-  assert.ok(game.players.every((p) => p.role === null));
+  // The word exists now: the imposter is someone, and the crew has something to draw.
+  assert.ok(typeof game.word === 'string' && game.word.length > 0);
+  assert.equal(game.players.filter((p) => p.role === 'imposter').length, 1);
+  assert.ok(game.players.every((p) => p.role === 'crew' || p.role === 'imposter'));
+  // Only the imposter is kept from the word.
+  const imposter = game.players.find((p) => p.role === 'imposter');
+  const crew = game.players.find((p) => p.role === 'crew');
+  assert.equal(imposter?.word, null);
+  assert.equal(crew?.word, game.word);
   assert.equal(game.clueOrder.length, 4);
 });
 

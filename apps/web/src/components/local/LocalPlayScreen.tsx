@@ -4,13 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ScreenShell } from '@/components/ui/ScreenHeader';
 import { WordArt, DrawingArt } from '@/components/ui/ModeIcon';
+import { playTone } from '@/lib/audio';
 import { BTN_RESET } from './controls';
 import { DrawingPad } from './DrawingPad';
-import {
-  DOMAINS,
-  FALLBACK_DOMAIN,
-  type DomainChoice,
-} from '@/data/localConfig';
+import { DOMAINS, FALLBACK_DOMAIN, type DomainChoice } from '@shared/game';
 import { selectWord, domainLabel } from '@shared/game/wordBank';
 
 /**
@@ -131,8 +128,6 @@ function Inner() {
   const [turn, setTurn] = useState(0);
   /** Bumped on every reveal so the flip animation replays for each player. */
   const [flip, setFlip] = useState(0);
-  /** true while the device is being passed during a shared drawing turn */
-  const [handedOver, setHandedOver] = useState(false);
 
   /**
    * Turn index runs across every lap, so it can exceed the length of `order`.
@@ -170,6 +165,8 @@ function Inner() {
   }, [lastTurn]);
 
   function revealCard() {
+    // Deliberately silent: the reveal is the quietest moment of the game, and a sound here plays
+    // while the next player is meant to be looking away.
     setFlip((n) => n + 1);
     setRevealed((seen) => ({ ...seen, [seat]: isImposter }));
     setStep('reveal');
@@ -183,6 +180,7 @@ function Inner() {
    * different next step, so it gets its own function instead of overloading `advance()`.
    */
   function handOver() {
+    playTone(lastCard ? 'start' : 'pass');
     if (isWord) {
       advance();
       return;
@@ -190,7 +188,6 @@ function Inner() {
     if (lastCard) {
       setStep('draw');
       setTurn(0);
-      setHandedOver(false);
       return;
     }
     setTurn((n) => n + 1);
@@ -202,7 +199,6 @@ function Inner() {
     setDeal((n) => n + 1);
     setStep('handout');
     setTurn(0);
-    setHandedOver(false);
   }
 
   /* Escape backs out one step — a mis-tap on "tap to see your card" is otherwise final. */
@@ -440,99 +436,59 @@ function Inner() {
         {/* ---------------- DRAW: one shared panel, turn by turn ---------------- */}
         {!isWord && step === 'draw' && (
           <>
-            <div className="w-full rounded-[22px] bg-[#120A26]/95 p-1 sm:p-3 ring-1 ring-inset ring-white/14 shadow-[0_22px_46px_rgba(0,0,0,0.58)] animate-rise-in motion-reduce:animate-none">
+            <div className="w-full rounded-[22px] bg-[#120A26]/95 p-2 sm:p-3 ring-1 ring-inset ring-white/14 shadow-[0_22px_46px_rgba(0,0,0,0.58)] animate-rise-in motion-reduce:animate-none">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="shrink-0 whitespace-nowrap text-[0.74rem] font-extrabold uppercase tracking-[0.1em] text-white">
-                  Player {seat} · Round {lap} of {drawLaps}
+                <span className="shrink-0 whitespace-nowrap text-[0.8rem] font-extrabold uppercase tracking-[0.08em] text-white">
+                  Player {seat}
+                  {!lastTurn && (
+                    <span className="text-[#C4B5FD]"> → Player {seatAt(turn + 1)}</span>
+                  )}
+                  <span className="ml-2 text-[0.66rem] font-bold text-white/50">
+                    round {lap}/{drawLaps}
+                  </span>
                 </span>
                 {badge}
               </div>
 
-              <p className="m-0 mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.66rem] font-extrabold uppercase tracking-[0.1em]">
-                <span className="text-[#C4B5FD]">
+              <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="rounded-full bg-white/10 px-2 py-0.5 text-[0.62rem] font-extrabold uppercase tracking-[0.08em] text-white/75 ring-1 ring-inset ring-white/12">
                   {drawsPerTurn} stroke{drawsPerTurn > 1 ? 's' : ''} each
                 </span>
                 {revealed[seat] ? (
-                  <span className="rounded-full bg-[#F472B6]/20 px-2 py-0.5 text-[#FBCFE8] ring-1 ring-inset ring-[#F472B6]/40">
+                  <span className="rounded-full bg-[#F472B6]/20 px-2 py-0.5 text-[0.62rem] font-extrabold uppercase tracking-[0.08em] text-[#FBCFE8] ring-1 ring-inset ring-[#F472B6]/40">
                     Imposter
                   </span>
                 ) : (
-                  <span className="rounded-full bg-[#22C55E]/15 px-2 py-0.5 text-[#4ADE80] ring-1 ring-inset ring-[#22C55E]/40">
+                  <span className="rounded-full bg-[#22C55E]/15 px-2 py-0.5 text-[0.62rem] font-extrabold uppercase tracking-[0.08em] text-[#4ADE80] ring-1 ring-inset ring-[#22C55E]/40">
                     Crew
                   </span>
                 )}
-                <span className="text-white/45">keep the drawing going</span>
-              </p>
-
-              {/*
-                The canvas is deliberately NOT unmounted between turns: everyone is adding
-                to the same picture, so hiding it (rather than clearing it) is what keeps
-                the work visible.
-              */}
-              <div className={handedOver ? 'hidden' : undefined}>
-                <DrawingPad
-                  accent={accent}
-                  keepContent
-                  turnLabel={`Player ${seat}`}
-                />
+                <span className="text-[0.62rem] font-bold uppercase tracking-[0.08em] text-white/40">
+                  everyone adds to one picture
+                </span>
               </div>
 
-              {handedOver && (
-                <div className="grid h-[clamp(150px,26dvh,230px)] place-items-center rounded-[13px] bg-[#171029] ring-1 ring-inset ring-white/12">
-                  <p className="m-0 max-w-[240px] px-3 text-center text-[0.72rem] font-semibold leading-snug text-white/60">
-                    Hand the device to{' '}
-                    <span className="font-extrabold text-[#C4B5FD]">{seat}</span> —
-                    the picture is hidden until they take over.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {handedOver ? (
-              <button
-                type="button"
-                onClick={() => setHandedOver(false)}
-                className={[
-                  BTN_RESET,
-                  'grid w-full place-items-center rounded-[15px] px-3 py-3.5',
-                  'text-[0.88rem] font-extrabold uppercase tracking-[0.12em] text-white',
-                  'transition-transform duration-fast ease-out hover:-translate-y-[1px] active:translate-y-[1px]',
-                  FOCUS,
-                  ART[accent],
-                ].join(' ')}
-              >
-                {seat} — tap to continue drawing
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
+              {/*
+                The canvas is never unmounted and never hidden: everyone adds to the same
+                picture, and the next player is named in the bar above. Finishing a turn
+                swaps the name — there is no separate "tap to continue" page.
+              */}
+              <DrawingPad
+                accent={accent}
+                nextLabel={lastTurn ? undefined : `Player ${seatAt(turn + 1)}`}
+                onTurnDone={() => {
                   if (lastTurn) {
                     setStep('discuss');
                     setTurn(0);
-                    setHandedOver(false);
                   } else {
                     setTurn((n) => n + 1);
-                    setHandedOver(true);
                   }
                 }}
-                className={[
-                  BTN_RESET,
-                  'grid w-full place-items-center rounded-[15px] px-3 py-3.5',
-                  'text-[0.88rem] font-extrabold uppercase tracking-[0.12em] text-white',
-                  'transition-transform duration-fast ease-out hover:-translate-y-[1px] active:translate-y-[1px]',
-                  FOCUS,
-                  ART[accent],
-                ].join(' ')}
-              >
-                {lastTurn
-                  ? 'Finish · drawing is done'
-                  : `Done · pass to ${seatAt(turn + 1)}`}
-              </button>
-            )}
+              />
+            </div>
 
-            <p className="m-0 text-center text-[0.62rem] font-bold uppercase tracking-[0.12em] text-white/50">
-              One shared picture — everyone adds to it
+            <p className="m-0 text-center text-[0.62rem] font-bold uppercase tracking-[0.12em] text-white/45">
+              Tap Done to hand the board to the next player
             </p>
           </>
         )}
@@ -594,7 +550,10 @@ function Inner() {
 
             <button
               type="button"
-              onClick={() => setStep('result')}
+              onClick={() => {
+                playTone('vote');
+                setStep('result');
+              }}
               className={[
                 BTN_RESET,
                 'grid w-full place-items-center rounded-[15px] px-3 py-3.5',
@@ -665,7 +624,10 @@ function Inner() {
             <div className="flex w-full flex-col gap-2">
               <button
                 type="button"
-                onClick={restart}
+                onClick={() => {
+                  playTone('start');
+                  restart();
+                }}
                 className={[
                   BTN_RESET,
                   'grid w-full place-items-center rounded-[15px] px-3 py-3',

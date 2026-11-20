@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
-import { colors, gradients, radius, shadow } from '@/theme/tokens';
+import { gradients, radius } from '../../theme/tokens';
+import { playTone } from '../../lib/audio';
 
 type Props = {
   onPress?: () => void;
@@ -14,7 +15,10 @@ export function PlayButton({ onPress, label = 'Get Started', disabled = false }:
   return (
     <View style={styles.wrap}>
       <Pressable
-        onPress={onPress}
+        onPress={() => {
+          playTone('tap');
+          onPress?.();
+        }}
         disabled={disabled}
         accessibilityRole="button"
         accessibilityLabel={label}
@@ -45,7 +49,14 @@ export function PlayButton({ onPress, label = 'Get Started', disabled = false }:
 
 const styles = StyleSheet.create({
   wrap: { width: '100%', maxWidth: 380, alignSelf: 'center' },
-  pressable: { borderRadius: radius.pill, marginBottom: 6, ...shadow.goldGlow },
+  /**
+   * Flat pill, no depth tricks.
+   *
+   * This used to carry a 5px `borderBottomWidth` in a darker gold, a "3D edge". On a device with a
+   * rounded screen that band reads as a detached shadow floating under the button — which is what
+   * you were seeing. The pressed state still dips, so the feedback is kept.
+   */
+  pressable: { borderRadius: radius.pill },
   pressed: { transform: [{ translateY: 3 }], opacity: 0.95 },
   disabled: { opacity: 0.55 },
   gradient: {
@@ -56,8 +67,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: radius.pill,
-    borderBottomWidth: 5,
-    borderBottomColor: colors.goldDark,
   },
-  label: { fontSize: 17, fontWeight: '800', color: '#2B1B00' },
+  label: { fontSize: 18, fontWeight: '800', color: '#2B1B00' },
 });

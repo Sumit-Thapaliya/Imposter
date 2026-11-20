@@ -65,6 +65,7 @@ export type RoomRecord = {
 
 /** The server chooses the word once and sends only the hint to imposters. */
 export function dealWord(domain: string, previousWord?: string | null): { word: string; hint: string } {
+  // `any` is resolved inside selectWord, so the word and its hint always match a real domain.
   return selectWord(domain, () => randomInt(0x100000000) / 0x100000000, previousWord);
 }
 
@@ -143,9 +144,33 @@ export function dealRound(room: RoomRecord): void {
  * Drawing mode is cooperative — there is no winner to declare, so the result screen
  * only reports what the board was.
  */
+/**
+ * Drawing rooms: pick the word and the imposter, but skip the card round.
+ *
+ * Drawing used to skip roles entirely — `role` stayed null, the word stayed null and
+ * `resolveVotes` scored nobody, so the result screen named no imposter and the crew could
+ * never win. Roles are dealt here instead; only the reveal step is skipped, because in
+ * drawing mode the reveal is the board.
+ */
 export function skipRoles(room: RoomRecord): void {
+  const { word, hint } = dealWord(room.settings.domain, room.word);
+  room.word = word;
+  room.hintText = hint;
   room.votes = new Map();
   room.result = null;
+  room.strokes = [];
+
+  const seated = room.players.filter((p) => !p.spectator);
+  const imposterCount = Math.min(room.settings.imposters, Math.max(1, Math.floor(seated.length / 3)));
+  const imposterIds = new Set(shuffle(seated).slice(0, imposterCount).map((p) => p.id));
+
+  for (const player of room.players) {
+    const isImposter = imposterIds.has(player.id);
+    player.role = isImposter ? 'imposter' : 'crew';
+    player.word = isImposter ? null : word;
+    player.hint = isImposter && room.settings.hints ? hint : null;
+  }
+
   // Random first drawer, not seat order — nobody should always go first.
   room.clueOrder = shuffle(room.players.filter((p) => !p.spectator)).map((p) => p.id);
   room.clueIndex = 0;
@@ -219,7 +244,11 @@ export function resolveVotes(room: RoomRecord): RoundResult {
     ejectedId: ejected?.id ?? null,
     ejectedName: ejected?.name ?? null,
     caught,
-    winner: caught ? 'crew' : 'imposters',
+    /**
+     * No votes at all is nobody's win: with an empty tally `caught` is false, and
+     * "not caught" used to hand the point to the imposters for free.
+     */
+    winner: topId === null ? 'none' : caught ? 'crew' : 'imposters',
     imposters: room.players
       .filter((p) => p.role === 'imposter')
       .map((p) => ({ id: p.id, name: p.name, avatar: p.avatar })),

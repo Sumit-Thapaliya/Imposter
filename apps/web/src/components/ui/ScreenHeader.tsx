@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { Backdrop, type BackdropKey } from './Backdrop';
 import { BackButton } from './BackButton';
+import { SoundToggle } from './SoundToggle';
 
 type Props = {
   title: string;
@@ -18,6 +19,8 @@ export function ScreenHeader({ title, subtitle, onBack }: Props) {
   return (
     <>
       {onBack && <BackButton onClick={onBack} />}
+      {/* Sound is a session-wide preference, so the control lives in the shared header. */}
+      <SoundToggle />
 
       <header className="flex w-full flex-col items-center gap-1.5">
         <h1 className="m-0 text-center font-display text-[clamp(1.45rem,6vw,2.3rem)] font-extrabold leading-[1.12] text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.7),0_4px_20px_rgba(0,0,0,0.55)]">

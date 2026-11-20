@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, Image, StyleSheet, View } from 'react-native';
-import { STAGE_CHARACTERS } from '@/data/characters';
+import { STAGE_CHARACTERS } from '../../data/characters';
 
 type Props = { reveal?: number };
 
